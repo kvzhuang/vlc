@@ -35,14 +35,12 @@ YUI.add("vlc", function (Y) {
         6: "ERROR"
     };
     VLC.TYPE        = "application/x-vlc-plugin";
-    VLC.VERSION     = "VideoLAN.VLCPlugin.2",
-    VLC.CLASS_ID    = "clsid:9BE31822-FDAD-461B-AD51-BE1D1C15992";
+    VLC.VERSION     = "VideoLAN.VLCPlugin.3",
+    VLC.CLASS_ID    = "clsid:9BE31822-FDAD-461B-AD51-BE1D1C159921";
     VLC.PLUGIN_PAGE = "http://www.videolan.org";
     VLC.TEMPLATE = [
         '<object ',
-        'version="' + VLC.VERSION + '"',
-        '        codebase="http://download.videolan.org/pub/videolan/vlc/last/win32/axvlc.cab"',
-        '        width="{width}" height="{height}" id="{id}">',
+        '     width="{width}" height="{height}" id="{id}">',
         '    <param name="src" value="">',
         '    <param name="wmode" value="window">',
         '</object>'
@@ -115,18 +113,19 @@ YUI.add("vlc", function (Y) {
                 tag.append(html);
                 that._set("node", Y.one("#" + id));
                 node = that.get("node") ;
-
                 if (Y.UA.ie) {
                     node.set("classid", VLC.CLASS_ID);
                     node.set("pluginspage", VLC.PLUGIN_PAGE);
                 } else {
                     node.set("type", VLC.TYPE);
                 }
+                    node.set("event","TRUE");
+                    node.set("version", VLC.VERSION);
             }
             Y.log(node._node.VersionInfo);
             if( !node._node.VersionInfo) {
                 Y.log("no VLC plugin" , "error", "Y.VLC");
-               that._set("installed",false);
+                that._set("installed",false);
                 Y.one("body").append(VLC.INSTALL_PLUGIN_TAG);
             } else {
                 that._set("installed",true);
