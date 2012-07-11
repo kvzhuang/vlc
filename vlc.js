@@ -81,9 +81,6 @@ YUI.add("vlc", function (Y) {
             value: true,
             validator: Y.Lang.isBoolean
         },
-        "node": {
-            value: null
-        },
         "installed": {
             value: null
         }
@@ -93,6 +90,7 @@ YUI.add("vlc", function (Y) {
         initializer : function (config) {
             var that = this,
                 node,
+                HTMLid,
                 id, // The plugin ID.
                 html,
                 width,
@@ -104,15 +102,20 @@ YUI.add("vlc", function (Y) {
             autoPlay = config.autoPlay ;
             width    = config.width || "400px";
             height   = config.height || "333px";
+            HTMLid   = config.HTMLid || null;
 
-
-
+            var tag = Y.one("body").append(html);
+            if ( HTMLid !== null && Y.one("#"+HTMLid)) {
+                tag = Y.one("#"+HTMLid);
+            }
+            Y.log(tag);
             if ( !node) {
                 id   = Y.guid();
                 html = Y.substitute(VLC.TEMPLATE, {id: id, width: width, height: height});
-                Y.one("body").append(html);
+                tag.append(html);
                 that._set("node", Y.one("#" + id));
-                node = that.get("node");
+                node = that.get("node") ;
+
                 if (Y.UA.ie) {
                     node.set("classid", VLC.CLASS_ID);
                     node.set("pluginspage", VLC.PLUGIN_PAGE);
@@ -120,11 +123,13 @@ YUI.add("vlc", function (Y) {
                     node.set("type", VLC.TYPE);
                 }
             }
+            Y.log(node._node.VersionInfo);
             if( !node._node.VersionInfo) {
                 Y.log("no VLC plugin" , "error", "Y.VLC");
+               that._set("installed",false);
                 Y.one("body").append(VLC.INSTALL_PLUGIN_TAG);
             } else {
-
+                that._set("installed",true);
             }
 
 
@@ -175,7 +180,11 @@ YUI.add("vlc", function (Y) {
             el.playlist.play();
         },
         stop: function () {
-           that._plugin._node.playlist.stop();
+           var that = this,
+               el,
+               node = that.get("node");
+           el = node._node;
+           el.playlist.stop();
         },
 
         destructor: function () {
