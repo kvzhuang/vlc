@@ -1,30 +1,69 @@
 /**
  * A util for control VLC.
  *
- * @module VLC
+ * @module vlc
  * @requires node ,base
- *
  */
-
 YUI.add("vlc", function (Y) {
-
-    function VLC (){
+    /**
+     * An utility for VLC control.
+     * The following is sample usage.
+     *
+     *     var vlc = new Y.VLC({
+     *         node: "#foo"
+     *     });
+     *
+     * @constructor
+     * @class VLC
+     * @param {Object} config attribute object
+     */
+    function VLC () {
         VLC.superclass.constructor.apply(this, arguments);
     }
-    VLC.STATUS = {  0: "IDLE",
-                    1: "OPENING",
-                    2: "BUFFERING",
-                    3: "PAUSED",
-                    4: "STOPPING",
-                    5: "ENDED",
-                    6: "ERROR"
+    /**
+     * The status code for VLC control.
+     *
+     * @property STATE
+     */
+    VLC.STATE = {
+        0: "IDLE",
+        1: "OPENING",
+        2: "BUFFERING",
+        3: "PAUSED",
+        4: "STOPPING",
+        5: "ENDED",
+        6: "ERROR"
     };
+    VLC.TYPE        = "application/x-vlc-plugin";
+    VLC.VERSION     = "VideoLAN.VLCPlugin.2",
+    VLC.CLASS_ID    = "clsid:9BE31822-FDAD-461B-AD51-BE1D1C15992";
+    VLC.PLUGIN_PAGE = "http://www.videolan.org";
+    VLC.TEMPLATE = [
+        '<object ',
+        'version="' + VLC.VERSION + '"',
+        '        codebase="http://download.videolan.org/pub/videolan/vlc/last/win32/axvlc.cab"',
+        '        width="{width}" height="{height}" id="{id}">',
+        '    <param name="src" value="">',
+        '    <param name="wmode" value="window">',
+        '</object>'
+    ].join("");
 
+    VLC.INSTALL_PLUGIN_TAG = [
+        '<p> Please install VLC plugin.',
+        '<br/> <a href="http://www.videolan.org/vlc/"> Download website </a>',
+        '</p>'
+    ].join("");
 
     VLC.ATTRS = {
-        "pluginId" :{
-            value:null
+        "node": {
+            value: null
         },
+        /**
+         * The video uri.
+         *
+         * @attribute uri
+         * @type String
+         */
         "uri" : {
             value : null
         },
@@ -32,10 +71,10 @@ YUI.add("vlc", function (Y) {
             value: null,
             readOnly: true
         },
-        "status" : {
+        "state" : {
             value: 0,
             validator: function (value) {
-                return (!(Y.Array.indexOf(VLC.STATUS, value) === -1));
+                return (!(Y.Array.indexOf(VLC.STATE, value) === -1));
             }
         },
         "autoPlay" :{
@@ -44,34 +83,66 @@ YUI.add("vlc", function (Y) {
         },
         "node": {
             value: null
+        },
+        "installed": {
+            value: null
         }
     };
 
-
     Y.extend(VLC, Y.Base, {
-        _plugin : null,
-        _node : null,
-        _status : null,
-        options : {},
-
         initializer : function (config) {
-            var that = this;
-            config.node = Y.one(config.node);
+            var that = this,
+                node,
+                id, // The plugin ID.
+                html,
+                width,
+                height,
+                autoPlay;
 
-            var node = self.get("node"); // YUI
-            node.get("id");
+            config   = config || {};
+            node     = config.node || null;
+            autoPlay = config.autoPlay ;
+            width    = config.width || "400px";
+            height   = config.height || "333px";
 
-            that._plugin = Y.one("#"+config.pluginId);
-            Y.log(that._plugin);
-            if (!that._plugin) {
-                //TODO Create div object
-                Y.log("undefinded");
+
+
+            if ( !node) {
+                id   = Y.guid();
+                html = Y.substitute(VLC.TEMPLATE, {id: id, width: width, height: height});
+                Y.one("body").append(html);
+                that._set("node", Y.one("#" + id));
+                node = that.get("node");
+                if (Y.UA.ie) {
+                    node.set("classid", VLC.CLASS_ID);
+                    node.set("pluginspage", VLC.PLUGIN_PAGE);
+                } else {
+                    node.set("type", VLC.TYPE);
+                }
             }
-            var el = that._node;
-            that._node = that._plugin._node;
-            Y.log(that._node.input.state);
-            var playItem = el.playlist.add(config.uri, config.uri, that.options);
-            //that._node.playItem(playItem);
+            if( !node._node.VersionInfo) {
+                Y.log("no VLC plugin" , "error", "Y.VLC");
+                Y.one("body").append(VLC.INSTALL_PLUGIN_TAG);
+            } else {
+
+            }
+
+
+            if( autoPlay === undefined) {
+                that._set("autoPlay",true);
+            }else{
+                that._set("autoPlay",autoPlay);
+            }
+
+            if( autoPlay === true) {
+                that.play();
+
+            }
+            /**
+             * It fires when a video starts to play.
+             *
+             * @event play
+             */
             that.publish("onplay",{
                 emitFacade: true
             });
@@ -91,12 +162,17 @@ YUI.add("vlc", function (Y) {
                 emitFacade: true
             });
         },
-        play: function () {
-            var that = this;
-            that._plugin._node.playlist.play();
-            this.fire("onplay",{});
-
-
+        play: function (uri) {
+            var that = this,
+                el,
+                node = that.get("node");
+            uri = uri || that.get("uri");
+            if (!uri) {
+                Y.log("You must provide either uri argument or uri attribute.", "error", "Y.VLC");
+            }
+            el = node._node;
+            el.playlist.playItem(el.playlist.add(uri));
+            el.playlist.play();
         },
         stop: function () {
            that._plugin._node.playlist.stop();
@@ -111,6 +187,6 @@ YUI.add("vlc", function (Y) {
     Y.VLC = VLC;
 
 }, "0.0.1", {
-    "requires": ["base", "node-base"]
+    "requires": ["base", "node", "substitute"]
 });
 

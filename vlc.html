@@ -4,40 +4,23 @@
 <meta charset="utf-8">
 <meta name="author" content="">
 <meta name="created" content="2012-07-05">
-<meta name="modified" content="Tue 10 Jul 2012 11:25:05 AM CST">
 <title> Prototype</title>
 <link rel="stylesheet" href="http://yui.yahooapis.com/3.4.1/build/cssreset/reset-min.css">
 <link rel="stylesheet" href="http://yui.yahooapis.com/3.4.1/build/cssfonts/fonts-min.css">
-<script type="text/javascript" src="http://yui.yahooapis.com/3.4.1/build/yui/yui-min.js"></script>
-<script type="text/javascript" src="vlc.js"></script>
 <style type="text/css">
 
 </style>
 </head>
 <body>
     <div>
-        <embed type="application/x-vlc-plugin" pluginspage="http://www.videolan.org" id="vlc_plugin_1"/>
-        <object classid="clsid:9BE31822-FDAD-461B-AD51-BE1D1C159921" codebase="http://download.videolan.org/pub/videolan/vlc/last/win32/axvlc.cab"
-                width="400" height="290" ></object>
     </div>
+
+    <script type="text/javascript" src="http://yui.yahooapis.com/3.4.1/build/yui/yui-min.js"></script>
+    <script type="text/javascript" src="vlc.js"></script>
     <script>
-        var y1 = YUI();
-    y1.use('vlc', function (Y) {
-
-    var attrs =
-          { pluginId:"vlc_plugin_1",
-            uri:"http://www.revolunet.com/static/download/labo/VLCcontrols/bunny.mp4"};
-
-      var  vlc = new Y.VLC(attrs);
-        vlc.play();
-        vlc.on("onplay", function (e) {
-            alert(e.position);
-        });
-        vlc.on("statusChange", function (e) {
-                e.newVal,
-                e.prevVal;
-        });
-//        Y.later(8000,this,function(){vlc.stop();});
+    YUI().use("vlc", function (Y) {
+        var vlc = new Y.VLC();
+            vlc.play("http://www.revolunet.com/static/download/labo/VLCcontrols/bunny.mp4");
     });
     </script>
 </body>
