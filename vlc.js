@@ -45,7 +45,7 @@ YUI.add("vlc", function (Y) {
         '    <param name="wmode" value="window">',
         '</object>'
     ].join("");
-
+    //TODO remove
     VLC.INSTALL_PLUGIN_TAG = [
         '<p> Please install VLC plugin.',
         '<br/> <a href="http://www.videolan.org/vlc/"> Download website </a>',
@@ -88,7 +88,7 @@ YUI.add("vlc", function (Y) {
         initializer : function (config) {
             var that = this,
                 node,
-                HTMLid,
+                container,
                 id, // The plugin ID.
                 html,
                 width,
@@ -97,22 +97,19 @@ YUI.add("vlc", function (Y) {
 
             config   = config || {};
             node     = config.node || null;
-            autoPlay = config.autoPlay ;
+            autoPlay = Y.Lang.isUndefined(config.autoPlay) ? true : config.autoPlay;
             width    = config.width || "400px";
             height   = config.height || "333px";
-            HTMLid   = config.HTMLid || null;
+            container   = config.container || "body";
+            container = Y.one(container);
 
-            var tag = Y.one("body").append(html);
-            if ( HTMLid !== null && Y.one("#"+HTMLid)) {
-                tag = Y.one("#"+HTMLid);
-            }
-            Y.log(tag);
-            if ( !node) {
+            if (!node) {
                 id   = Y.guid();
                 html = Y.substitute(VLC.TEMPLATE, {id: id, width: width, height: height});
-                tag.append(html);
+                container.append(html);
                 that._set("node", Y.one("#" + id));
                 node = that.get("node") ;
+
                 if (Y.UA.ie) {
                     node.set("classid", VLC.CLASS_ID);
                     node.set("pluginspage", VLC.PLUGIN_PAGE);
@@ -122,26 +119,17 @@ YUI.add("vlc", function (Y) {
                     node.set("event","TRUE");
                     node.set("version", VLC.VERSION);
             }
+
             Y.log(node._node.VersionInfo);
-            if( !node._node.VersionInfo) {
-                Y.log("no VLC plugin" , "error", "Y.VLC");
-                that._set("installed",false);
+
+            if (!node._node.VersionInfo) {
+                Y.log("no VLC plugin", "error", "Y.VLC");
+                that._set("installed", false);
                 Y.one("body").append(VLC.INSTALL_PLUGIN_TAG);
             } else {
-                that._set("installed",true);
+                that._set("installed", true);
             }
 
-
-            if( autoPlay === undefined) {
-                that._set("autoPlay",true);
-            }else{
-                that._set("autoPlay",autoPlay);
-            }
-
-            if( autoPlay === true) {
-                that.play();
-
-            }
             /**
              * It fires when a video starts to play.
              *

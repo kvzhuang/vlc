@@ -25,11 +25,14 @@
     <script type="text/javascript" src="vlc.js"></script>
     <script>
     YUI().use("vlc", function (Y) {
-        var config = {"HTMLid":"vlc"};
+        //TODO container
+        var config = {"container":"#vlc"};
         var vlc = new Y.VLC(config);
             //vlc.play("http://www.revolunet.com/static/download/labo/VLCcontrols/bunny.mp4");
             vlc.play("http://people.videolan.org/~dionoea/vlc-plugin-demo/streams/sw_h264.asf");
-    });
+
+            Y.later(5000, vlc, vlc.stop);
+        });
     </script>
 </body>
 </html>
