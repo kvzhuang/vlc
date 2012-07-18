@@ -80,7 +80,40 @@ YUI.add("vlc", function (Y) {
             validator: Y.Lang.isBoolean
         },
         "installed": {
-            value: null
+            value: null,
+            getter: function (){
+
+            if (window.ActiveXObject) {
+                try {
+                    var vlcObj = new ActiveXObject("VideoLAN.VLCPlugin.2");
+                } catch (e) {
+                }
+                if (!vlcObj) {
+                    return false;
+                }
+                return true;
+            }
+            if (navigator.plugins && navigator.plugins.length) {
+                for (var i=0; i < navigator.plugins.length; i++ ) {
+                    var item = navigator.plugins[i];
+                    if (item.name.indexOf("VLC") > -1){
+                    // && item.description.indexOf("1.1.11") > -1) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+
+            }
+        },
+        "volume": {
+            value: 100,
+            getter: function (){
+
+            },
+            setter: function (){
+
+            }
         }
     };
 
@@ -120,12 +153,12 @@ YUI.add("vlc", function (Y) {
                     node.set("version", VLC.VERSION);
             }
 
-            Y.log(node._node.VersionInfo);
+            //Y.log(that.detectInstallation());
 
             if (!node._node.VersionInfo) {
                 Y.log("no VLC plugin", "error", "Y.VLC");
                 that._set("installed", false);
-                Y.one("body").append(VLC.INSTALL_PLUGIN_TAG);
+               //Y.one("body").append(VLC.INSTALL_PLUGIN_TAG);
             } else {
                 that._set("installed", true);
             }
@@ -170,10 +203,44 @@ YUI.add("vlc", function (Y) {
            var that = this,
                el,
                node = that.get("node");
+            Y.log(that);
            el = node._node;
            el.playlist.stop();
         },
+        togglePause: function () {
+           var that = this,
+                el,
+                node = that.get("node");
+           el = node._node;
+           el.playlist.togglePause();
+        },
+        toggleMute: function () {
+           var that = this,
+               el,
+               node = that.get("node");
+           el = node._node;
+           el.audio.toggleMute();
 
+
+        },
+        setVolume: function (volume) {
+
+            var that = this,
+                el,
+                node = that.get("node");
+            el = node._node;
+            var currentVolume = el.audio.volume;
+            if( volume <200 && volume >0){
+               el.audio.volume = volume ;
+            }
+        },
+        toggleFullScreen: function () {
+           var that = this,
+               el,
+               node = that.get("node");
+           el = node._node;
+           el.video.toggleFullscreen();
+        },
         destructor: function () {
 
         }

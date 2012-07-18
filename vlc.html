@@ -14,24 +14,51 @@
 <body>
     <div id="vlc" >
     </div>
-    <input type="button" value="play" onclick="javascript:play()"/>
-    <input type="button" value="pause" onclick="javascript:pause()"/>
-    <input type="button" value="stop" onclick="javascript:stop()"/>
-    <input type="button" value="volume up" onclick="javascript:volumeup()"/>
-    <input type="button" value="volume down" onclick="javascript:volumedown()"/>
-    <input type="button" value="mute" onclick="javascript:mute()"/>
-    <input type="button" value="fullscreen" onclick="javascript:fullscreen()"/>
+    <div id="controls">
+        <input type="button" value="play" id="play" />
+        <input type="button" value="pause" id="togglePause" />
+        <input type="button" value="stop" id="stop" />
+        <input type="button" value="volume up" id="vup" />
+        <input type="button" value="volume down" id="vdown" />
+        <input type="button" value="mute" id="toggleMute" />
+        <input type="button" value="fullscreen" id="toggleFullscreen"/>
+    </div>
+
     <script type="text/javascript" src="http://yui.yahooapis.com/3.4.1/build/yui/yui-min.js"></script>
     <script type="text/javascript" src="vlc.js"></script>
     <script>
-    YUI().use("vlc", function (Y) {
-        //TODO container
-        var config = {"container":"#vlc"};
-        var vlc = new Y.VLC(config);
-            //vlc.play("http://www.revolunet.com/static/download/labo/VLCcontrols/bunny.mp4");
-            vlc.play("http://people.videolan.org/~dionoea/vlc-plugin-demo/streams/sw_h264.asf");
+    YUI().use("vlc","node-event-delegate", function (Y) {
+        var eventHandler,vlc,config;
 
-            Y.later(5000, vlc, vlc.stop);
+        config       = {"container":"#vlc"};
+        vlc          = new Y.VLC(config);
+        eventHandler = function (event) {
+                var action = event.currentTarget.get("value");
+                Y.log(action);
+                if (action === 'pause'){
+                    vlc.togglePause();
+                }
+                if (action ==='stop'){
+                    vlc.stop();
+                }
+
+                if (action ==='volume up'){
+                    vlc.setVolume();
+                }
+                if (action ==='volume down'){
+                    vlc.stop();
+                }
+                if (action ==='mute'){
+                    vlc.stop();
+                }
+                if (action ==='fullscreen'){
+                    vlc.stop();
+                }
+            };
+      //vlc.play("http://www.revolunet.com/static/download/labo/VLCcontrols/bunny.mp4");
+        vlc.play("http://people.videolan.org/~dionoea/vlc-plugin-demo/streams/sw_h264.asf");
+
+        Y.one("#controls").delegate('click', eventHandler, 'input');
         });
     </script>
 </body>
