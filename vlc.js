@@ -109,11 +109,17 @@ YUI.add("vlc", function (Y) {
         "volume": {
             value: 100,
             getter: function (){
-
+                return this.get("node")._node.audio.volume;
             },
-            setter: function (){
-
+            setter: function (newVolume){
+                this.get("node")._node.audio.volume = newVolume;
             }
+        },
+        "width": {
+            value: null
+        },
+        "height": {
+            value: null
         }
     };
 
@@ -152,9 +158,8 @@ YUI.add("vlc", function (Y) {
                     node.set("event","TRUE");
                     node.set("version", VLC.VERSION);
             }
-
-            //Y.log(that.detectInstallation());
-
+            //TODO remove VersionInfo Check
+            /*
             if (!node._node.VersionInfo) {
                 Y.log("no VLC plugin", "error", "Y.VLC");
                 that._set("installed", false);
@@ -162,7 +167,9 @@ YUI.add("vlc", function (Y) {
             } else {
                 that._set("installed", true);
             }
-
+            */
+            that._set("width",width);
+            that._set("height",height);
             /**
              * It fires when a video starts to play.
              *
@@ -220,11 +227,8 @@ YUI.add("vlc", function (Y) {
                node = that.get("node");
            el = node._node;
            el.audio.toggleMute();
-
-
         },
         setVolume: function (volume) {
-
             var that = this,
                 el,
                 node = that.get("node");

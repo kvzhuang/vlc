@@ -15,13 +15,13 @@
     <div id="vlc" >
     </div>
     <div id="controls">
-        <input type="button" value="play" id="play" />
         <input type="button" value="pause" id="togglePause" />
         <input type="button" value="stop" id="stop" />
         <input type="button" value="volume up" id="vup" />
         <input type="button" value="volume down" id="vdown" />
         <input type="button" value="mute" id="toggleMute" />
         <input type="button" value="fullscreen" id="toggleFullscreen"/>
+        <input type="button" value="get size" id="size"/>
     </div>
 
     <script type="text/javascript" src="http://yui.yahooapis.com/3.4.1/build/yui/yui-min.js"></script>
@@ -43,22 +43,27 @@
                 }
 
                 if (action ==='volume up'){
-                    vlc.setVolume();
+                    vlc._set("volume",vlc.get("volume")+1);
                 }
                 if (action ==='volume down'){
-                    vlc.stop();
+                    vlc._set("volume",vlc.get("volume")-1);
                 }
                 if (action ==='mute'){
-                    vlc.stop();
+                    vlc.toggleMute();
                 }
                 if (action ==='fullscreen'){
-                    vlc.stop();
+                    vlc.toggleFullScreen();
+                }
+                if(action === 'get size'){
+                    alert("width:"+vlc.get("width")+" height:"+vlc.get("height"));
                 }
             };
-      //vlc.play("http://www.revolunet.com/static/download/labo/VLCcontrols/bunny.mp4");
-        vlc.play("http://people.videolan.org/~dionoea/vlc-plugin-demo/streams/sw_h264.asf");
+        if (vlc.get("installed")) {
+            //vlc.play("http://www.revolunet.com/static/download/labo/VLCcontrols/bunny.mp4");
+            vlc.play("http://people.videolan.org/~dionoea/vlc-plugin-demo/streams/sw_h264.asf");
 
-        Y.one("#controls").delegate('click', eventHandler, 'input');
+            Y.one("#controls").delegate('click', eventHandler, 'input');
+            }
         });
     </script>
 </body>
