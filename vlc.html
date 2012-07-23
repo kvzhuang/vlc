@@ -24,13 +24,15 @@
         <input type="button" value="get size" id="size"/>
         <input type="button" value="get time" id="time"/>
         <input type="button" value="set time" id="time"/>
+        <input type="button" value="get state" id="state"/>
     </div>
 
     <script type="text/javascript" src="http://yui.yahooapis.com/3.4.1/build/yui/yui-min.js"></script>
     <script type="text/javascript" src="vlc.js"></script>
     <script>
     YUI().use("vlc","node-event-delegate", function (Y) {
-        var eventHandler,vlc,config;
+        var eventHandler,vlc,config,stateCheck;
+
 
         config       = {"container":"#vlc"};
         vlc          = new Y.VLC(config);
@@ -65,6 +67,9 @@
                 if(action === 'set time'){
                     vlc._set("time", 10000);
                 }
+                if(action === 'get state' ){
+                    Y.log(vlc.get("state"));
+                }
             };
         if (vlc.get("installed")) {
             //vlc.play("http://www.revolunet.com/static/download/labo/VLCcontrols/bunny.mp4");
@@ -72,6 +77,9 @@
 
             Y.one("#controls").delegate('click', eventHandler, 'input');
             }
+            vlc.after("stateChange", function(e){
+                Y.log("State change from "+e.prevVal +" to "+e.newVal );
+            });
         });
     </script>
 </body>

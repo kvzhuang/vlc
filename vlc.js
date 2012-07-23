@@ -26,13 +26,14 @@ YUI.add("vlc", function (Y) {
      * @property STATE
      */
     VLC.STATE = {
-        0: "IDLE",
-        1: "OPENING",
-        2: "BUFFERING",
-        3: "PAUSED",
-        4: "STOPPING",
-        5: "ENDED",
-        6: "ERROR"
+        0: "idle",
+        1: "opening",
+        2: "buffering",
+        3: "playing",
+        4: "paused",
+        5: "stopping",
+        6: "ended",
+        7: "error"
     };
     VLC.TYPE        = "application/x-vlc-plugin";
     VLC.VERSION     = "VideoLAN.VLCPlugin.3",
@@ -77,8 +78,13 @@ YUI.add("vlc", function (Y) {
         */
         "state" : {
             value: 0,
+            /*
             validator: function (value) {
                 return (!(Y.Array.indexOf(VLC.STATE, value) === -1));
+            },
+            */
+            getter: function (){
+                return VLC.STATE[this.get("node")._node.input.state];
             }
         },
         /**
@@ -176,7 +182,7 @@ YUI.add("vlc", function (Y) {
             validator: Y.Lang.isArray
         },
         /**
-        * the vlc object's mode (fullscreen or not).
+        * the vlc object's mode (fullscreen or not), reserved for future.
         * TODO add feature.
         * @attribute mode
         * @type boolean
@@ -196,10 +202,12 @@ YUI.add("vlc", function (Y) {
                 html,
                 width,
                 height,
-                autoPlay;
+                autoPlay,
+                previousState,
+                stateCheck;
 
             config   = config || {};
-            node     = config.node || null;
+                node     = config.node || null;
             autoPlay = Y.Lang.isUndefined(config.autoPlay) ? true : config.autoPlay;
             width    = config.width || "400px";
             height   = config.height || "333px";
@@ -225,7 +233,7 @@ YUI.add("vlc", function (Y) {
             that._set("size", [width , height]);
             /**
              * It fires when a video starts to play.
-             *
+            *
              * @event play
              */
             that.publish("onplay",{
@@ -246,6 +254,17 @@ YUI.add("vlc", function (Y) {
             that.publish("volumnChange",{
                 emitFacade: true
             });
+
+            previousState = "idle";
+            stateCheck = function(){
+                var currentState = that.get("state");
+                if( previousState !== currentState ){
+                    that._set("state",currentState);
+                  //  Y.log("state change from " +previousState+" to "+ currentState);
+                    previousState = currentState;
+                }
+            };
+            setInterval(stateCheck,300);
         },
         play: function (url) {
             var that = this,
@@ -264,7 +283,6 @@ YUI.add("vlc", function (Y) {
            var that = this,
                el,
                node = that.get("node");
-            Y.log(that);
            el = node._node;
            el.playlist.stop();
         },
