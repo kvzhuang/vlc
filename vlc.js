@@ -78,13 +78,8 @@ YUI.add("vlc", function (Y) {
         */
         "state" : {
             value: 0,
-            /*
-            validator: function (value) {
-                return (!(Y.Array.indexOf(VLC.STATE, value) === -1));
-            },
-            */
-            getter: function (){
-                return VLC.STATE[this.get("node")._node.input.state];
+            getter: function (value){
+                return VLC.STATE[value];
             }
         },
         /**
@@ -207,7 +202,7 @@ YUI.add("vlc", function (Y) {
                 stateCheck;
 
             config   = config || {};
-                node     = config.node || null;
+            node     = config.node || null;
             autoPlay = Y.Lang.isUndefined(config.autoPlay) ? true : config.autoPlay;
             width    = config.width || "400px";
             height   = config.height || "333px";
@@ -236,31 +231,15 @@ YUI.add("vlc", function (Y) {
             *
              * @event play
              */
-            that.publish("onplay",{
-                emitFacade: true
-            });
-            that.publish("onstop",{
-                emitFacade: true
-            });
-            that.publish("onpause",{
-                emitFacade: true
-            });
             that.publish("fullscreen",{
                 emitFacade: true
             });
-            that.publish("statusChange",{
-                emitFacade: true
-            });
-            that.publish("volumnChange",{
-                emitFacade: true
-            });
 
-            previousState = "idle";
+            previousState = 0;
             stateCheck = function(){
-                var currentState = that.get("state");
+                var currentState = that._getState();
                 if( previousState !== currentState ){
                     that._set("state",currentState);
-                  //  Y.log("state change from " +previousState+" to "+ currentState);
                     previousState = currentState;
                 }
             };
@@ -323,6 +302,14 @@ YUI.add("vlc", function (Y) {
                node = that.get("node");
            el = node._node;
            return el.input.length;
+        },
+        _getState: function (){
+           var that = this,
+               el,
+               node = that.get("node");
+           el = node._node;
+           return el.input.state;
+
         },
         destructor: function () {
 
