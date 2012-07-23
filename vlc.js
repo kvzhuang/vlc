@@ -81,7 +81,7 @@ YUI.add("vlc", function (Y) {
         },
         "installed": {
             value: null,
-            getter: function (){
+            getter: function () {
 
             if (window.ActiveXObject) {
                 try {
@@ -106,6 +106,25 @@ YUI.add("vlc", function (Y) {
 
             }
         },
+        "time": {
+            value: null,
+            getter: function () {
+                return this.get("node")._node.input.time;
+            },
+            setter: function (newValue) {
+                if( value !== null && value !== undefined){
+                    this.get("node")._node.input.time = newValue;
+                }
+            },
+            validator: Y.Lang.isNumber
+        },
+        "length": {
+            value: null,
+            getter: function (){
+                return this.get("node")._node.input.length;
+            }
+
+        }
         "volume": {
             value: 100,
             getter: function (){
@@ -205,6 +224,7 @@ YUI.add("vlc", function (Y) {
             el = node._node;
             el.playlist.playItem(el.playlist.add(uri));
             el.playlist.play();
+            that._set("time",el.input.time);
         },
         stop: function () {
            var that = this,
@@ -245,6 +265,13 @@ YUI.add("vlc", function (Y) {
            el = node._node;
            el.video.toggleFullscreen();
         },
+        getLength: function (){
+           var that = this,
+               el,
+               node = that.get("node");
+           el = node._node;
+           return el.input.length;
+        }
         destructor: function () {
 
         }

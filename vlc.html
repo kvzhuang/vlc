@@ -22,6 +22,8 @@
         <input type="button" value="mute" id="toggleMute" />
         <input type="button" value="fullscreen" id="toggleFullscreen"/>
         <input type="button" value="get size" id="size"/>
+        <input type="button" value="get time" id="time"/>
+        <input type="button" value="set time" id="time"/>
     </div>
 
     <script type="text/javascript" src="http://yui.yahooapis.com/3.4.1/build/yui/yui-min.js"></script>
@@ -56,6 +58,12 @@
                 }
                 if(action === 'get size'){
                     alert("width:"+vlc.get("width")+" height:"+vlc.get("height"));
+                }
+                if(action === 'get time'){
+                    Y.log("get time"+vlc.get("time"));
+                }
+                if(action === 'set time'){
+                    vlc._set("time", 10000);
                 }
             };
         if (vlc.get("installed")) {
