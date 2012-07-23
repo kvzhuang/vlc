@@ -53,32 +53,49 @@ YUI.add("vlc", function (Y) {
     ].join("");
 
     VLC.ATTRS = {
+        /**
+        * The VLC object node.
+        * @attribute node
+        * @type DOM Object
+        */
         "node": {
             value: null
         },
         /**
-         * The video uri.
+         * The video url.
          *
-         * @attribute uri
+         * @attribute url
          * @type String
          */
-        "uri" : {
+        "url" : {
             value : null
         },
-        "duration" : {
-            value: null,
-            readOnly: true
-        },
+        /**
+        * The VLC object state.
+        * @attribute state
+        * @type VLC.STATE
+        */
         "state" : {
             value: 0,
             validator: function (value) {
                 return (!(Y.Array.indexOf(VLC.STATE, value) === -1));
             }
         },
+        /**
+        * The VLC object is AutoPlay, reserve for develop.
+        * TODO add to feature.
+        * @attribute autoPlay
+        * @type Boolean
+        */
         "autoPlay" :{
             value: true,
             validator: Y.Lang.isBoolean
         },
+        /**
+        * The VLC object is installed in browser.
+        * @attribute installed
+        * @type Boolean
+        */
         "installed": {
             value: null,
             getter: function () {
@@ -106,7 +123,12 @@ YUI.add("vlc", function (Y) {
 
             }
         },
-        "time": {
+        /**
+        * The VLC input object's position (current playing time in milli second) .
+        * @attribute position
+        * @type Number
+        */
+        "position": {
             value: null,
             getter: function () {
                 return this.get("node")._node.input.time;
@@ -118,13 +140,23 @@ YUI.add("vlc", function (Y) {
             },
             validator: Y.Lang.isNumber
         },
-        "length": {
+        /**
+        * The VLC input object's total time (in milli second) .
+        * @attribute duration
+        * @type Number
+        */
+        "duration": {
             value: null,
             getter: function (){
                 return this.get("node")._node.input.length;
-            }
-
-        }
+            },
+            readOnly: true
+        },
+        /**
+        * the vlc input object's volume .
+        * @attribute volume
+        * @type number
+        */
         "volume": {
             value: 100,
             getter: function (){
@@ -134,11 +166,24 @@ YUI.add("vlc", function (Y) {
                 this.get("node")._node.audio.volume = newVolume;
             }
         },
-        "width": {
-            value: null
+        /**
+        * the vlc object's size.
+        * @attribute size
+        * @type array
+        */
+        "size": {
+            value: null,
+            validator: Y.Lang.isArray
         },
-        "height": {
-            value: null
+        /**
+        * the vlc object's mode (fullscreen or not).
+        * TODO add feature.
+        * @attribute mode
+        * @type boolean
+        */
+        "mode": {
+            value: null,
+            validator: Y.Lang.isBoolean
         }
     };
 
@@ -177,18 +222,7 @@ YUI.add("vlc", function (Y) {
                     node.set("event","TRUE");
                     node.set("version", VLC.VERSION);
             }
-            //TODO remove VersionInfo Check
-            /*
-            if (!node._node.VersionInfo) {
-                Y.log("no VLC plugin", "error", "Y.VLC");
-                that._set("installed", false);
-               //Y.one("body").append(VLC.INSTALL_PLUGIN_TAG);
-            } else {
-                that._set("installed", true);
-            }
-            */
-            that._set("width",width);
-            that._set("height",height);
+            that._set("size", [width , height]);
             /**
              * It fires when a video starts to play.
              *
@@ -213,16 +247,16 @@ YUI.add("vlc", function (Y) {
                 emitFacade: true
             });
         },
-        play: function (uri) {
+        play: function (url) {
             var that = this,
                 el,
                 node = that.get("node");
-            uri = uri || that.get("uri");
-            if (!uri) {
-                Y.log("You must provide either uri argument or uri attribute.", "error", "Y.VLC");
+            url = url || that.get("url");
+            if (!url) {
+                Y.log("You must provide either url argument or url attribute.", "error", "Y.VLC");
             }
             el = node._node;
-            el.playlist.playItem(el.playlist.add(uri));
+            el.playlist.playItem(el.playlist.add(url));
             el.playlist.play();
             that._set("time",el.input.time);
         },
@@ -271,7 +305,7 @@ YUI.add("vlc", function (Y) {
                node = that.get("node");
            el = node._node;
            return el.input.length;
-        }
+        },
         destructor: function () {
 
         }

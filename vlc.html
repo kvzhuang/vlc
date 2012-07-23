@@ -57,7 +57,7 @@
                     vlc.toggleFullScreen();
                 }
                 if(action === 'get size'){
-                    alert("width:"+vlc.get("width")+" height:"+vlc.get("height"));
+                    alert("width:"+vlc.get("size")[0]+" height:"+vlc.get("size")[1]);
                 }
                 if(action === 'get time'){
                     Y.log("get time"+vlc.get("time"));
