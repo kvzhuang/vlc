@@ -203,24 +203,8 @@ YUI.add("vlc", function (Y) {
             container   = config.container || "body";
             container = Y.one(container);
 
-            if (!node) {
-                id   = Y.guid();
-                if( Y.UA.gecko ) {
-                    html = Y.substitute(VLC.TEMPLATE, {id: id, width: width, height: height, type: "type="+VLC.TYPE});
-                } else {
-                    html = Y.substitute(VLC.TEMPLATE, {id: id, width: width, height: height});
-                }
-                container.append(html);
-                node = Y.one("#"+id);
-                that._set("node", node);
-                if (Y.UA.ie) {
-                    node.set("classid", VLC.CLASS_ID);
-                    node.set("pluginspage", VLC.PLUGIN_PAGE);
-                } else {
-                    node.set("type",VLC.TYPE);
-                }
-                    node.set("version", VLC.VERSION);
-            }
+            that._create(node, container, id, width, height);
+
             that._set("size", [width , height]);
             /**
              * It fires when a video starts to play.
@@ -241,6 +225,28 @@ YUI.add("vlc", function (Y) {
             };
             setInterval(stateCheck,300);
         },
+        _create: function ( node, container, id, width, height) {
+            var html;
+            if (!node) {
+               id   = Y.guid();
+                if( Y.UA.gecko ) {
+                    html = Y.substitute(VLC.TEMPLATE, {id: id, width: width, height: height, type: "type="+VLC.TYPE});
+                } else {
+                    html = Y.substitute(VLC.TEMPLATE, {id: id, width: width, height: height});
+                }
+                container.append(html);
+                node = Y.one("#"+id);
+                this._set("node", node);
+                if (Y.UA.ie) {
+                    node.set("classid", VLC.CLASS_ID);
+                    node.set("pluginspage", VLC.PLUGIN_PAGE);
+                } else {
+                    node.set("type",VLC.TYPE);
+                }
+                    node.set("version", VLC.VERSION);
+            }
+
+        },
         play: function (url) {
             var that = this,
                 el,
@@ -250,8 +256,8 @@ YUI.add("vlc", function (Y) {
                 Y.log("You must provide either url argument or url attribute.", "error", "Y.VLC");
             }
             el = node._node;
-            el.playlist.playItem(el.playlist.add(url));
-            el.playlist.play();
+           // el.playlist.playItem(el.playlist.add(url));
+           // el.playlist.play();
             that._set("time",el.input.time);
         },
         stop: function () {
