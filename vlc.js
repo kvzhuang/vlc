@@ -41,16 +41,10 @@ YUI.add("vlc", function (Y) {
     VLC.PLUGIN_PAGE = "http://www.videolan.org";
     VLC.TEMPLATE = [
         '<object ',
-        '     width="{width}" height="{height}" id="{id}">',
+        '     id="{id}" width="{width}" height="{height}" {type}>',
         '    <param name="src" value="">',
         '    <param name="wmode" value="window">',
         '</object>'
-    ].join("");
-    //TODO remove
-    VLC.INSTALL_PLUGIN_TAG = [
-        '<p> Please install VLC plugin.',
-        '<br/> <a href="http://www.videolan.org/vlc/"> Download website </a>',
-        '</p>'
     ].join("");
 
     VLC.ATTRS = {
@@ -211,18 +205,20 @@ YUI.add("vlc", function (Y) {
 
             if (!node) {
                 id   = Y.guid();
-                html = Y.substitute(VLC.TEMPLATE, {id: id, width: width, height: height});
+                if( Y.UA.gecko ) {
+                    html = Y.substitute(VLC.TEMPLATE, {id: id, width: width, height: height, type: "type="+VLC.TYPE});
+                } else {
+                    html = Y.substitute(VLC.TEMPLATE, {id: id, width: width, height: height});
+                }
                 container.append(html);
-                that._set("node", Y.one("#" + id));
-                node = that.get("node") ;
-
+                node = Y.one("#"+id);
+                that._set("node", node);
                 if (Y.UA.ie) {
                     node.set("classid", VLC.CLASS_ID);
                     node.set("pluginspage", VLC.PLUGIN_PAGE);
                 } else {
-                    node.set("type", VLC.TYPE);
+                    node.set("type",VLC.TYPE);
                 }
-                    node.set("event","TRUE");
                     node.set("version", VLC.VERSION);
             }
             that._set("size", [width , height]);
