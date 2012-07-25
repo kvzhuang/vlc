@@ -41,7 +41,7 @@ YUI.add("vlc", function (Y) {
     VLC.PLUGIN_PAGE = "http://www.videolan.org";
     VLC.TEMPLATE = [
         '<object ',
-        '     id="{id}" width="{width}" height="{height}" {type}>',
+        '    id="{id}" width="{width}" height="{height}" {type} autoplay="no">',
         '    <param name="src" value="">',
         '    <param name="wmode" value="window">',
         '</object>'
@@ -186,6 +186,7 @@ YUI.add("vlc", function (Y) {
         initializer : function (config) {
             var that = this,
                 node,
+                url,
                 container,
                 id, // The plugin ID.
                 html,
@@ -198,14 +199,15 @@ YUI.add("vlc", function (Y) {
                 _objectCheckCount = 3;
 
 
-            config   = config || {};
-            node     = config.node || null;
-            autoPlay = Y.Lang.isUndefined(config.autoPlay) ? true : config.autoPlay;
-            width    = config.width || "400px";
-            height   = config.height || "333px";
-            container   = config.container || "body";
+            config    = config || {};
+            node      = config.node || null;
+            autoPlay  = Y.Lang.isUndefined(config.autoPlay) ? true : config.autoPlay;
+            width     = config.width || "400px";
+            height    = config.height || "333px";
+            container = config.container || "body";
             container = Y.one(container);
-
+            url       = config.url || null;
+            that._set("url", url);
             node = that._create(node, container, id, width, height);
 
 
@@ -238,14 +240,28 @@ YUI.add("vlc", function (Y) {
             });
 
             previousState = 0;
-            stateCheck = function(){
-                var currentState = that._getState();
-                if( previousState !== currentState ){
-                    that._set("state",currentState);
-                    previousState = currentState;
+            stateCheck = function () {
+                try {
+                    var currentState = that._getState();
+                    if( previousState !== currentState ){
+                        that._set("state",currentState);
+                        previousState = currentState;
+                    }
+                }catch (err) {
+                    that._set("state",7);
+                    container.removeChild(node);
+                    node = that._create(node, container, id, width, height);
+                    if (autoPlay) {
+                        that.play();
+                    }
                 }
             };
-            //setInterval(stateCheck,300);
+            setInterval(stateCheck,300);
+        },
+        getVersionInfo : function (){
+            var that = this,
+                node = that.get("node");
+            return node.VersionInfo;
         },
         _create: function ( node, container, id, width, height) {
             var html;
@@ -257,7 +273,7 @@ YUI.add("vlc", function (Y) {
             }
             container.append(html);
             node = Y.one("#"+id);
-            this._set("node", node);
+            this._set("node", node._node);
             if (Y.UA.ie) {
                 node.set("classid", VLC.CLASS_ID);
                 node.set("pluginspage", VLC.PLUGIN_PAGE);
@@ -269,68 +285,55 @@ YUI.add("vlc", function (Y) {
         },
         play: function (url) {
             var that = this,
-                el,
                 node = that.get("node");
             url = url || that.get("url");
             if (!url) {
                 Y.log("You must provide either url argument or url attribute.", "error", "Y.VLC");
+            } else if (!that.get("url")) {
+                that._set("url",url);
+
             }
-            el = node._node;
-            el.playlist.playItem(el.playlist.add(url));
-            el.playlist.play();
-            that._set("time",el.input.time);
+
+            node.playlist.playItem(node.playlist.add(url));
+            that._set("time",node.input.time);
         },
         stop: function () {
            var that = this,
-               el,
                node = that.get("node");
-           el = node._node;
-           el.playlist.stop();
+           node.playlist.stop();
         },
         togglePause: function () {
            var that = this,
-                el,
                 node = that.get("node");
-           el = node._node;
-           el.playlist.togglePause();
+           node.playlist.togglePause();
         },
         toggleMute: function () {
            var that = this,
-               el,
                node = that.get("node");
-           el = node._node;
-           el.audio.toggleMute();
+           node.audio.toggleMute();
         },
         setVolume: function (volume) {
             var that = this,
-                el,
                 node = that.get("node");
-            el = node._node;
             var currentVolume = el.audio.volume;
             if( volume <200 && volume >0){
-               el.audio.volume = volume ;
+               node.audio.volume = volume ;
             }
         },
         toggleFullScreen: function () {
            var that = this,
-               el,
                node = that.get("node");
-           el = node._node;
-           el.video.toggleFullscreen();
+           node.video.toggleFullscreen();
         },
         getLength: function (){
            var that = this,
-               el,
                node = that.get("node");
-           el = node._node;
-           return el.input.length;
+           return node.input.length;
         },
         _getState: function (){
            var that = this,
-               el,
                node = that.get("node");
-           el = node._node;
-           return el.input.state;
+           return node.input.state;
 
         },
         destructor: function () {

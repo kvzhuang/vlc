@@ -25,63 +25,76 @@
         <input type="button" value="get time" id="time"/>
         <input type="button" value="set time" id="time"/>
         <input type="button" value="get state" id="state"/>
+        <input type="button" value="play" id="play"/>
     </div>
 
     <script type="text/javascript" src="http://yui.yahooapis.com/3.4.1/build/yui/yui-min.js"></script>
     <script type="text/javascript" src="vlc.js"></script>
     <script>
     YUI().use("vlc","node-event-delegate", function (Y) {
-        var eventHandler,vlc,config,stateCheck;
+        var eventHandler,
+            vlc,
+            config,
+            stateCheck,
+            startPlay;
 
 
-        config       = {"container":"#vlc"};
+        config       = { "container":"#vlc" ,
+                         "url":"http://dl.dropbox.com/u/10258402/GokKUqLcvD8.mp4"};
         vlc          = new Y.VLC(config);
         eventHandler = function (event) {
-                var action = event.currentTarget.get("value");
-                Y.log(action);
-                if (action === 'pause'){
+            var action = event.currentTarget.get("value");
+            switch (action) {
+                case 'pause' :
                     vlc.togglePause();
-                }
-                if (action ==='stop'){
+                    break
+                case 'stop' :
                     vlc.stop();
-                }
-
-                if (action ==='volume up'){
+                    break
+                case 'volume up' :
                     vlc._set("volume",vlc.get("volume")+1);
-                }
-                if (action ==='volume down'){
+                    break
+                case 'volume down' :
                     vlc._set("volume",vlc.get("volume")-1);
-                }
-                if (action ==='mute'){
+                    break
+                case 'mute' :
                     vlc.toggleMute();
-                }
-                if (action ==='fullscreen'){
+                    break;
+                case 'fullscreen' :
                     vlc.toggleFullScreen();
-                }
-                if(action === 'get size'){
+                    break
+                case 'get size' :
                     alert("width:"+vlc.get("size")[0]+" height:"+vlc.get("size")[1]);
-                }
-                if(action === 'get time'){
-                    Y.log("get time"+vlc.get("time"));
-                }
-                if(action === 'set time'){
+                    break
+                case 'get time' :
+                    alert("get time"+vlc.get("time"));
+                    break
+                case 'set time' :
                     vlc._set("time", 10000);
-                }
-                if(action === 'get state' ){
-                    Y.log(vlc.get("state"));
-                }
-            };
-            if (vlc.get("installed")) {
-                //vlc.play("http://www.revolunet.com/static/download/labo/VLCcontrols/bunny.mp4");
-                vlc.play("http://people.videolan.org/~dionoea/vlc-plugin-demo/streams/sw_h264.asf");
-
-                Y.one("#controls").delegate('click', eventHandler, 'input');
+                    break
+                case 'get state' :
+                    alert(vlc.get("state"));
+                    break
+                case 'play' :
+                    vlc.play();
+                    break
             }
+        };
+        startPlay = function () {
+        };
 
-            vlc.after("stateChange", function(e){
-                Y.log("State change from "+e.prevVal +" to "+e.newVal );
-            });
+        if (vlc.get("installed")) {
+            //vlc.play("http://www.revolunet.com/static/download/labo/VLCcontrols/bunny.mp4");
+//            vlc.play("http://people.videolan.org/~dionoea/vlc-plugin-demo/streams/sw_h264.asf");
+            vlc.play();
+            Y.one("#controls").delegate('click', eventHandler, 'input');
+            setInterval(startPlay,500);
+        }
+
+        vlc.after("stateChange", function(e){
+            Y.log("State change from "+e.prevVal +" to "+e.newVal );
         });
+    });
     </script>
 </body>
 </html>
