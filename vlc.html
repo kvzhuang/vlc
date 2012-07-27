@@ -51,10 +51,10 @@
                     vlc.stop();
                     break
                 case 'volume up' :
-                    vlc._set("volume",vlc.get("volume")+1);
+                    vlc.set("volume",vlc.get("volume")+1);
                     break
                 case 'volume down' :
-                    vlc._set("volume",vlc.get("volume")-1);
+                    vlc.set("volume",vlc.get("volume")-1);
                     break
                 case 'mute' :
                     vlc.toggleMute();
@@ -66,10 +66,7 @@
                     alert("width:"+vlc.get("size")[0]+" height:"+vlc.get("size")[1]);
                     break
                 case 'get time' :
-                    alert("get time"+vlc.get("time"));
-                    break
-                case 'set time' :
-                    vlc._set("time", 10000);
+                    alert("get time: "+vlc.get("position")+" total: "+vlc.get("duration"));
                     break
                 case 'get state' :
                     alert(vlc.get("state"));
@@ -86,6 +83,14 @@
             vlc.play();
             Y.one("#controls").delegate('click', eventHandler, 'input');
         }
+
+        vlc.on("ready", function(e){
+            Y.log("VLC ready");
+         });
+        vlc.on("playing", function(e){
+            Y.log("VLC playing");
+//            alert("width:"+vlc.get("size")[0]+" height:"+vlc.get("size")[1]);
+         });
 
         vlc.after("stateChange", function(e){
             Y.log("State change from "+e.prevVal +" to "+e.newVal );

@@ -31,7 +31,7 @@ YUI.add("vlc", function (Y) {
         2: "buffering",
         3: "playing",
         4: "paused",
-        5: "stopping",
+        5: "stopped",
         6: "ended",
         7: "error"
     };
@@ -41,7 +41,9 @@ YUI.add("vlc", function (Y) {
     VLC.PLUGIN_PAGE = "http://www.videolan.org";
     VLC.TEMPLATE = [
         '<object ',
-        '    id="{id}" width="{width}" height="{height}" {type} autoplay="no">',
+        '    id="{id}" width="{width}" height="{height}" {type} >',
+        '    <param name="autoplay" value="no">',
+        '    <param name="autostart value="no">',
         '    <param name="src" value="">',
         '    <param name="wmode" value="window">',
         '</object>'
@@ -126,11 +128,11 @@ YUI.add("vlc", function (Y) {
         "position": {
             value: null,
             getter: function () {
-                return this.get("node")._node.input.time;
+                return this.get("node").input.time;
             },
             setter: function (newValue) {
-                if( value !== null && value !== undefined){
-                    this.get("node")._node.input.time = newValue;
+                if( newValue !== null && newValue !== undefined){
+                    this.get("node").input.time = newValue;
                 }
             },
             validator: Y.Lang.isNumber
@@ -143,7 +145,7 @@ YUI.add("vlc", function (Y) {
         "duration": {
             value: null,
             getter: function (){
-                return this.get("node")._node.input.length;
+                return this.get("node").input.length;
             },
             readOnly: true
         },
@@ -155,10 +157,10 @@ YUI.add("vlc", function (Y) {
         "volume": {
             value: 100,
             getter: function (){
-                return this.get("node")._node.audio.volume;
+                return this.get("node").audio.volume;
             },
             setter: function (newVolume){
-                this.get("node")._node.audio.volume = newVolume;
+                this.get("node").audio.volume = newVolume;
             }
         },
         /**
@@ -194,9 +196,7 @@ YUI.add("vlc", function (Y) {
                 height,
                 autoPlay,
                 previousState,
-                stateCheck,
-                _objectCheck,
-                _objectCheckCount = 3;
+                stateCheck;
 
 
             config    = config || {};
@@ -211,23 +211,6 @@ YUI.add("vlc", function (Y) {
             node = that._create(node, container, id, width, height);
 
 
-            objectCheck = function (){
-
-                _objectCheckCount -= 1;
-                var version = node._node.VersionInfo;
-
-                if (!version) {
-                    container.removeChild(node);
-                    node = that._create(node, container, id, width, height);
-                    return;
-                }
-                if ( version && _objectCheckCount == 0){
-                    return;
-                }
-
-                Y.later(1000, this, objectCheck);
-            };
-            Y.later(1000, this, objectCheck);
 
             that._set("size", [width , height]);
             /**
@@ -239,6 +222,17 @@ YUI.add("vlc", function (Y) {
                 emitFacade: true
             });
 
+            that.publish("error",{
+                emitFacade: true
+            });
+
+            that.publish("ready",{
+                emitFacade: true,
+                defaultFn: function () {
+                        this.play();
+                }
+            });
+
             previousState = 0;
             stateCheck = function () {
                 try {
@@ -246,8 +240,12 @@ YUI.add("vlc", function (Y) {
                     if( previousState !== currentState ){
                         that._set("state",currentState);
                         previousState = currentState;
+                        if (currentState === 1) {
+                            that.fire("ready");
+                        }
                     }
                 }catch (err) {
+                    that.fire("error");
                     that._set("state",7);
                     container.removeChild(node);
                     node = that._create(node, container, id, width, height);
@@ -293,7 +291,7 @@ YUI.add("vlc", function (Y) {
                 that._set("url",url);
 
             }
-
+            that.fire("playing");
             node.playlist.playItem(node.playlist.add(url));
             that._set("time",node.input.time);
         },
@@ -311,24 +309,6 @@ YUI.add("vlc", function (Y) {
            var that = this,
                node = that.get("node");
            node.audio.toggleMute();
-        },
-        setVolume: function (volume) {
-            var that = this,
-                node = that.get("node");
-            var currentVolume = el.audio.volume;
-            if( volume <200 && volume >0){
-               node.audio.volume = volume ;
-            }
-        },
-        toggleFullScreen: function () {
-           var that = this,
-               node = that.get("node");
-           node.video.toggleFullscreen();
-        },
-        getLength: function (){
-           var that = this,
-               node = that.get("node");
-           return node.input.length;
         },
         _getState: function (){
            var that = this,
