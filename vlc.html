@@ -35,8 +35,7 @@
         var eventHandler,
             vlc,
             config,
-            stateCheck,
-            startPlay;
+            stateCheck;
 
 
         config       = { "container":"#vlc" ,
@@ -80,15 +79,12 @@
                     break
             }
         };
-        startPlay = function () {
-        };
 
         if (vlc.get("installed")) {
             //vlc.play("http://www.revolunet.com/static/download/labo/VLCcontrols/bunny.mp4");
 //            vlc.play("http://people.videolan.org/~dionoea/vlc-plugin-demo/streams/sw_h264.asf");
             vlc.play();
             Y.one("#controls").delegate('click', eventHandler, 'input');
-            setInterval(startPlay,500);
         }
 
         vlc.after("stateChange", function(e){
