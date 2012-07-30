@@ -1,3 +1,4 @@
+/*global window, YUI, document */
 /**
  * A util for control VLC.
  *
@@ -5,12 +6,23 @@
  * @requires node ,base
  */
 YUI.add("vlc", function (Y) {
+
+    var MODULE_ID = "Y.VLC",
+        _log;
+
+    _log = function (message, type, module) {
+        type = type || "info";
+        module = module || MODULE_ID;
+        Y.log(message, type, module);
+    };
+
     /**
      * An utility for VLC control.
      * The following is sample usage.
      *
      *     var vlc = new Y.VLC({
-     *         node: "#foo"
+     *         container: "#foo"
+     *         url: "http://dl.dropbox.com/u/10258402/GokKUqLcvD8.mp4",
      *     });
      *
      * @constructor
@@ -26,14 +38,14 @@ YUI.add("vlc", function (Y) {
      * @property STATE
      */
     VLC.STATE =[
-         'idle',
-         'opening',
-         'buffering',
-         'playing',
-         'paused',
-         'stopped',
-         'ended',
-         'error'
+        "idle",
+        "opening",
+        "buffering",
+        "playing",
+        "paused",
+        "stopped",
+        "ended",
+        "error"
     ];
     VLC.TYPE        = "application/x-vlc-plugin";
     VLC.VERSION     = "VideoLAN.VLCPlugin.2";
@@ -48,21 +60,33 @@ YUI.add("vlc", function (Y) {
         '    <param name="wmode" value="window">',
         '</object>'
     ].join("");
-
-    VLC.DEFAULT_WIDTH = "1000px";
+    VLC.DEFAULT_WIDTH  = "1000px";
     VLC.DEFAULT_HEIGHT = "700px";
-
+    VLC.CHECK_RETRY    = 3;
+    VLC.CHECK_INTERVAL = 1000;
+    VLC.POLL_INTERVAL  = 1000;
     VLC.ATTRS = {
         /**
-        * The VLC object node.
-        * @attribute node
-        * @type DOM Object
-        */
-        "node": {
+         * The container to place object element.
+         *
+         * @attribute container
+         * @type
+         */
+        "container": {
+            value: null,
+            writeOnce: true
+        },
+        /**
+         * The object element.
+         *
+         * @attribute object
+         * @type HTMLElement
+         */
+        "object": {
             value: null
         },
         /**
-         * The video url.
+         * The video URL.
          *
          * @attribute url
          * @type String
@@ -71,85 +95,91 @@ YUI.add("vlc", function (Y) {
             value : null
         },
         /**
-        * The VLC object state.
-        * @attribute state
-        * @type VLC.STATE
-        */
+         * The player's current state.
+         *
+         * @attribute state
+         * @type String
+         */
         "state" : {
-            value: 0,
-            getter: function (value){
-                return VLC.STATE[value];
-            }
+            value: "idle",
+            readOnly: true
         },
         /**
-        * The VLC object is AutoPlay, reserve for develop.
-        * TODO add to feature.
-        * @attribute autoPlay
-        * @type Boolean
-        */
+         * The VLC object is AutoPlay, reserve for develop.
+         *
+         * @attribute autoPlay
+         * @type Boolean
+         */
         "autoPlay" :{
             value: true,
             validator: Y.Lang.isBoolean
         },
         /**
-        * The VLC object is installed in browser.
-        * @attribute installed
-        * @type Boolean
-        */
+         * The VLC object is installed in browser.
+         *
+         * @attribute installed
+         * @type Boolean
+         */
         "installed": {
             value: null,
             getter: function () {
-            var vlcObj, i, item;
-            if (window.ActiveXObject) {
-                try {
-                    vlcObj = new ActiveXObject("VideoLAN.VLCPlugin.2");
-                } catch (e) {
-                    return false;
+                var vlcObj,
+                    i, j,   // For iteration.
+                    plugins,
+                    plugin;
+
+                if (window.ActiveXObject) {
+                    try {
+                        vlcObj = new window.ActiveXObject("VideoLAN.VLCPlugin.2");
+                    } catch (e) {
+                        return false;
+                    }
+                    if (!vlcObj) {
+                        return false;
+                    }
+                    return true;
                 }
-                if (!vlcObj) {
-                    return false;
-                }
-                return true;
-            }
-            if (navigator.plugins && navigator.plugins.length) {
-                for (i=0; i < navigator.plugins.length; i++ ) {
-                    item = navigator.plugins[i];
-                    if (item.name.indexOf("VLC") > -1){
-                    // && item.description.indexOf("1.1.11") > -1) {
-                        return true;
+
+                plugins = window.navigator.plugins;
+                if (plugins && plugins.length) {
+                    for (i = 0, j = plugins.length; i < j; i++) {
+                        plugin = plugins[i];
+                        if (plugin.name.indexOf("VLC") > -1) {
+                            return true;
+                        }
                     }
                 }
-            }
-            return false;
 
+                return false;
             }
         },
         /**
-        * The VLC input object's position (current playing time in milli second) .
-        * @attribute position
-        * @type Number
-        */
+         * The VLC input object's position (current playing time in milli second) .
+         *
+         * @attribute position
+         * @type Number
+         */
         "position": {
             value: null,
             getter: function () {
-                return this.get("node").input.time;
+                return this.get("object").input.time;
             },
-            setter: function (newValue) {
-                if( newValue !== null && newValue !== undefined){
-                    this.get("node").input.time = newValue;
-                }
+            setter: function (value) {
+                this.get("object").input.time = value;
+                return value;
             },
             validator: Y.Lang.isNumber
         },
         /**
-        * The VLC input object's total time (in milli second) .
-        * @attribute duration
-        * @type Number
-        */
+         * The video's total time in millionsecond.
+         *
+         * @attribute duration
+         * @type Number
+         */
         "duration": {
             value: null,
             getter: function (){
-                return this.get("node").input.length;
+                return this.get("object").input.length;
             },
             readOnly: true
         },
@@ -161,178 +191,246 @@ YUI.add("vlc", function (Y) {
         "volume": {
             value: 100,
             getter: function () {
-                return this.get("node").audio.volume;
+                return this.get("object").audio.volume;
             },
-            setter: function (newVolume) {
-                this.get("node").audio.volume = newVolume;
+            setter: function (value) {
+                this.get("object").audio.volume = value;
             }
         },
         /**
-        * the vlc object's size.
-        * @attribute size
-        * @type array
-        */
+         * The object's size.
+         *
+         * @attribute size
+         * @type Array
+         */
         "size": {
-            value: null,
+            value: [VLC.DEFAULT_WIDTH, VLC.DEFAULT_HEIGHT],
             validator: Y.Lang.isArray
         },
         /**
-        * the vlc object's mode (fullscreen or not), reserved for future.
-        * TODO add feature.
-        * @attribute mode
-        * @type boolean
-        */
+         *
+         *
+         * @attribute mode
+         * @type boolean
+         */
         "fullscreen": {
             value: false,
             validator: Y.Lang.isBoolean,
-            setter: function (isFullscreen) {
-                this.get("node").video.fullscreen = isFullscreen;
-                return isFullscreen;
+            setter: function (value) {
+                this.get("object").video.fullscreen = value;
+                return value;
             }
         }
     };
 
     Y.extend(VLC, Y.Base, {
-        initializer : function (config) {
+        _paused: false,
+        _retryCount: 0,
+        _playTimer: null,
+        /**
+         * VLC often fails to play.
+         */
+        _checkState: function () {
             var that = this,
-                node,
+                state;
+            _log("_checkState() is executed (" + that._retryCount + ").");
+            try {
+                // The following line might fails because VLC is not ready.
+                state = VLC.STATE[that.get("object").input.state];
+                if (that.get("state") !== state) {
+                    that._set("state", state);
+                    if (state === "opening") {
+                        that._set("state", "play");
+                        that.fire("play");
+                        return;
+                    }
+                }
+            } catch (err) {
+                that.fire("error", {
+                    code: "1",
+                    message: "VLC fails to create. Try again later..."
+                });
+                that._set("state", "error");
+                that.get("container").removeChild(that.get("object"));
+                that._create();
+            }
+            if (that._retryCount > 0) {
+                Y.later(VLC.CHECK_INTERVAL, that, that._checkState);
+                that._retryCount = that._retryCount - 1;
+            } else {
+                _log("Retry too many times. Give up!", "error");
+            }
+        },
+        _poll: function () {
+            _log("_poll() is executed.");
+            var that = this,
+                input = that.get("object").input;
+
+            if (
+                (input.length > 0 && input.time > 0) &&
+                (input.length === input.time)
+            ) {
+                that._playTimer.cancel();
+                that._playTimer = null;
+                that.fire("ended");
+                that._set("state", "ended");
+            } else {
+                that.fire("playing", {
+                    duration: input.length,
+                    position: input.time
+                });
+                that._playTimer = Y.later(VLC.POLL_INTERVAL, that, that._poll);
+                that._set("state", "playing");
+            }
+        },
+        _defPlayFn: function () {
+            _log("_defPlayFn() is executed");
+            var that = this;
+            that.fire("ready");
+            that._playTimer = Y.later(VLC.POLL_INTERVAL, that, that._poll, null);
+        },
+        initializer : function (config) {
+            _log("initializer() is executed");
+            var that = this,
                 url,
-                container,
-                id, // The plugin ID.
-                html,
-                width,
-                height,
-                autoPlay,
-                previousState,
-                stateCheck;
+                container;
 
+            config = config || {};
 
-            config    = config || {};
-            node      = config.node || null;
-            autoPlay  = Y.Lang.isUndefined(config.autoPlay) ? true : config.autoPlay;
-            width     = config.width || VLC.DEFAULT_WIDTH;
-            height    = config.height || VLC.DEFAULT_HEIGHT;
+            // Set container.
             container = config.container || "body";
             container = Y.one(container);
-            url       = config.url || null;
-            that._set("url", url);
-            node = that._create(node, container, id, width, height);
-            that._set("size", [width , height]);
+            that._set("container", container);
 
-            /**
-             * It fires when a video starts to play.
-            *
-             * @event play
-             */
-            that.publish("fullscreen",{
-                emitFacade: true
-            });
+            // Set Video URL.
+            url = config.url || null;
+            that._set("url", url);
 
             that.publish("error",{
                 emitFacade: true
             });
 
-            that.publish("ready",{
+            that.publish("play",{
                 emitFacade: true,
-                defaultFn: function () {
-                        this.play();
-                }
+                defaultFn: that._defPlayFn
             });
 
-            previousState = 0;
+            that.publish("playing",{
+                emitFacade: true
+            });
 
-
-            stateCheck = function () {
-                try {
-                    var currentState = that._getState();
-                    if( previousState !== currentState ){
-                        that._set("state", currentState);
-                        previousState = currentState;
-                        if (currentState === 1) {
-                            that.fire("ready");
-                        }
-                    }
-                }catch (err) {
-                    that.fire("error");
-                    that._set("state", 7);
-                    container.removeChild(node);
-                    node = that._create(node, container, id, width, height);
-                    if (autoPlay) {
-                        that.play();
-                    }
-                }
-            };
-            Y.later(300, that, stateCheck, null, true);
+            if (that.get("autoPlay")) {
+                that.play();
+            }
         },
-        getVersionInfo : function (){
+        _create: function () {
+            _log("_create() is executed.");
             var that = this,
-                node = that.get("node");
-            return node.VersionInfo;
-        },
-        _create: function ( node, container, id, width, height) {
-            var html;
-           id   = Y.guid();
-            if( Y.UA.gecko ) {
-                html = Y.substitute(VLC.TEMPLATE, {id: id, width: width, height: height, type: "type="+VLC.TYPE});
-            } else {
-                html = Y.substitute(VLC.TEMPLATE, {id: id, width: width, height: height});
+                container = that.get("container"),
+                html,
+                token,
+                size = that.get("size"),
+                width = size[0],
+                height = size[1],
+                id = Y.guid(),
+                node,
+                object;
+
+            token = {
+                id     : id,
+                width  : width,
+                height : height
+            };
+            if (Y.UA.gecko) {
+                token.type = "type=" + VLC.TYPE;
             }
+            html = Y.substitute(VLC.TEMPLATE, token);
             container.append(html);
-            node = Y.one("#"+id);
-            this._set("node", node._node);
+
+            object = document.getElementById(id);
+            that._set("object", object);
+
             if (Y.UA.ie) {
-                node.set("classid", VLC.CLASS_ID);
-                node.set("pluginspage", VLC.PLUGIN_PAGE);
+                object.setAttribute("classid", VLC.CLASS_ID);
+                object.setAttribute("pluginspage", VLC.PLUGIN_PAGE);
             } else {
-                node.set("type",VLC.TYPE);
+                object.setAttribute("type", VLC.TYPE);
             }
-                node.set("version", VLC.VERSION);
-            return node;
+            object.setAttribute("version", VLC.VERSION);
+            object.playlist.playItem(object.playlist.add(that.get("url")));
         },
         play: function (url) {
+            _log("play() is executed.");
             var that = this,
-                node = that.get("node");
+                object = that.get("object");
+
             url = url || that.get("url");
             if (!url) {
-                Y.log("You must provide either url argument or url attribute.", "error", "Y.VLC");
-            } else if (!that.get("url")) {
-                that._set("url",url);
-
+                _log("You must provide either url argument or url attribute.", "error");
+            } else {
+                that._set("url", url);
             }
-            that.fire("playing");
-            node.playlist.playItem(node.playlist.add(url));
-            that._set("time",node.input.time);
+            _log("play() - The video URL is " + url);
+
+            that._create();
+            that._retryCount = VLC.CHECK_RETRY;
+            Y.later(VLC.CHECK_INTERVAL, that, that._checkState);
         },
         stop: function () {
+            _log("stop() is executed.");
            var that = this,
-               node = that.get("node");
-           node.playlist.stop();
+               object = that.get("object");
+           object.playlist.stop();
+           that._playTimer.cancel();
+           that._playTimer = null;
+           that._set("state", "stopped");
+           that.fire("stop");
         },
-        togglePause: function () {
-           var that = this,
-                node = that.get("node");
-           node.playlist.togglePause();
+        pause: function () {
+            _log("stop() is executed.");
+            var that = this,
+                object = that.get("object");
+            if (that._paused) {
+                Y.log("pause() - The player has already been paused.", "warn", MODULE_ID);
+                return;
+            }
+            object.playlist.togglePause();
+            that._playTimer.cancel();
+            that._playTimer = null;
+            that._paused = true;
+            that._set("state", "paused");
+            that.fire("pause");
         },
-        toggleMute: function () {
-           var that = this,
-               node = that.get("node");
-           node.audio.toggleMute();
-        },
-        _getState: function (){
-           var that = this,
-               node = that.get("node");
-           return node.input.state;
-
+        resume: function () {
+            _log("resume() is executed.");
+            var that = this,
+                object = that.get("object");
+            if (!that._paused) {
+                _log("resume() - The player isn't paused.");
+                return;
+            }
+            object.playlist.togglePause();
+            that._playTimer = Y.later(VLC.POLL_INTERVAL, that, that._poll, null, true);
+            that.fire("resume");
+            that._paused = false;
         },
         destructor: function () {
-
+            _log("destructor() is executed.");
+            var that = this,
+                object = that.get("object");
+            if (that.get("state") === "playing") {
+                object.playlist.stop();
+                that._playTimer.cancel();
+                that._playTimer = null;
+            }
+            object.parentNode.removeChild(object);
+            object = null;
         }
-
+        //toggleMute: function () {
+            //var that = this,
+                //object = that.get("object");
+            //object.audio.toggleMute();
+        //},
     });
-
     Y.VLC = VLC;
-
-}, "0.0.1", {
-    "requires": ["base", "node", "substitute"]
-});
-
+}, "0.0.1", {"requires": ["base", "node", "substitute"]});

@@ -16,6 +16,7 @@
     </div>
     <div id="controls">
         <input type="button" value="pause" id="togglePause" />
+        <input type="button" value="resume" />
         <input type="button" value="stop" id="stop" />
         <input type="button" value="volume up" id="vup" />
         <input type="button" value="volume down" id="vdown" />
@@ -26,6 +27,7 @@
         <input type="button" value="set time" id="time"/>
         <input type="button" value="get state" id="state"/>
         <input type="button" value="play" id="play"/>
+        <input type="button" value="destroy" id="destroy"/>
     </div>
 
     <script type="text/javascript" src="http://yui.yahooapis.com/3.4.1/build/yui/yui-min.js"></script>
@@ -38,14 +40,16 @@
             stateCheck;
 
 
-        config       = { "container":"#vlc" ,
-                         "url":"http://dl.dropbox.com/u/10258402/GokKUqLcvD8.mp4"};
+        config       = {
+            "container": "#vlc",
+            "url": "http://dl.dropbox.com/u/10258402/GokKUqLcvD8.mp4"
+        };
         vlc          = new Y.VLC(config);
         eventHandler = function (event) {
             var action = event.currentTarget.get("value");
             switch (action) {
                 case 'pause' :
-                    vlc.togglePause();
+                    vlc.pause();
                     break
                 case 'stop' :
                     vlc.stop();
@@ -75,13 +79,19 @@
                 case 'play' :
                     vlc.play();
                     break
+                case 'resume' :
+                    vlc.resume();
+                    break
+                case 'destroy' :
+                    vlc.destroy();
+                    break
             }
         };
 
         if (vlc.get("installed")) {
             //vlc.play("http://www.revolunet.com/static/download/labo/VLCcontrols/bunny.mp4");
 //            vlc.play("http://people.videolan.org/~dionoea/vlc-plugin-demo/streams/sw_h264.asf");
-            vlc.play();
+            // vlc.play();
             Y.one("#controls").delegate('click', eventHandler, 'input');
         }
 
@@ -89,8 +99,7 @@
             Y.log("VLC ready");
          });
         vlc.on("playing", function(e){
-            Y.log("VLC playing");
-//            alert("width:"+vlc.get("size")[0]+" height:"+vlc.get("size")[1]);
+            // Y.log("playing - duration = " + e.duration + "/ position = " + e.position);
          });
 
         vlc.after("stateChange", function(e){
