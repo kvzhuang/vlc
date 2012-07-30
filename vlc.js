@@ -25,18 +25,18 @@ YUI.add("vlc", function (Y) {
      *
      * @property STATE
      */
-    VLC.STATE = {
-        0: "idle",
-        1: "opening",
-        2: "buffering",
-        3: "playing",
-        4: "paused",
-        5: "stopped",
-        6: "ended",
-        7: "error"
-    };
+    VLC.STATE =[
+         'idle',
+         'opening',
+         'buffering',
+         'playing',
+         'paused',
+         'stopped',
+         'ended',
+         'error'
+    ];
     VLC.TYPE        = "application/x-vlc-plugin";
-    VLC.VERSION     = "VideoLAN.VLCPlugin.2",
+    VLC.VERSION     = "VideoLAN.VLCPlugin.2";
     VLC.CLASS_ID    = "clsid:9BE31822-FDAD-461B-AD51-BE1D1C159921";
     VLC.PLUGIN_PAGE = "http://www.videolan.org";
     VLC.TEMPLATE = [
@@ -48,6 +48,9 @@ YUI.add("vlc", function (Y) {
         '    <param name="wmode" value="window">',
         '</object>'
     ].join("");
+
+    VLC.DEFAULT_WIDTH = "1000px";
+    VLC.DEFAULT_HEIGHT = "700px";
 
     VLC.ATTRS = {
         /**
@@ -96,11 +99,12 @@ YUI.add("vlc", function (Y) {
         "installed": {
             value: null,
             getter: function () {
-
+            var vlcObj, i, item;
             if (window.ActiveXObject) {
                 try {
-                    var vlcObj = new ActiveXObject("VideoLAN.VLCPlugin.2");
+                    vlcObj = new ActiveXObject("VideoLAN.VLCPlugin.2");
                 } catch (e) {
+                    return false;
                 }
                 if (!vlcObj) {
                     return false;
@@ -108,8 +112,8 @@ YUI.add("vlc", function (Y) {
                 return true;
             }
             if (navigator.plugins && navigator.plugins.length) {
-                for (var i=0; i < navigator.plugins.length; i++ ) {
-                    var item = navigator.plugins[i];
+                for (i=0; i < navigator.plugins.length; i++ ) {
+                    item = navigator.plugins[i];
                     if (item.name.indexOf("VLC") > -1){
                     // && item.description.indexOf("1.1.11") > -1) {
                         return true;
@@ -156,10 +160,10 @@ YUI.add("vlc", function (Y) {
         */
         "volume": {
             value: 100,
-            getter: function (){
+            getter: function () {
                 return this.get("node").audio.volume;
             },
-            setter: function (newVolume){
+            setter: function (newVolume) {
                 this.get("node").audio.volume = newVolume;
             }
         },
@@ -178,9 +182,13 @@ YUI.add("vlc", function (Y) {
         * @attribute mode
         * @type boolean
         */
-        "mode": {
-            value: null,
-            validator: Y.Lang.isBoolean
+        "fullscreen": {
+            value: false,
+            validator: Y.Lang.isBoolean,
+            setter: function (isFullscreen) {
+                this.get("node").video.fullscreen = isFullscreen;
+                return isFullscreen;
+            }
         }
     };
 
@@ -202,17 +210,15 @@ YUI.add("vlc", function (Y) {
             config    = config || {};
             node      = config.node || null;
             autoPlay  = Y.Lang.isUndefined(config.autoPlay) ? true : config.autoPlay;
-            width     = config.width || "400px";
-            height    = config.height || "333px";
+            width     = config.width || VLC.DEFAULT_WIDTH;
+            height    = config.height || VLC.DEFAULT_HEIGHT;
             container = config.container || "body";
             container = Y.one(container);
             url       = config.url || null;
             that._set("url", url);
             node = that._create(node, container, id, width, height);
-
-
-
             that._set("size", [width , height]);
+
             /**
              * It fires when a video starts to play.
             *
@@ -234,11 +240,13 @@ YUI.add("vlc", function (Y) {
             });
 
             previousState = 0;
+
+
             stateCheck = function () {
                 try {
                     var currentState = that._getState();
                     if( previousState !== currentState ){
-                        that._set("state",currentState);
+                        that._set("state", currentState);
                         previousState = currentState;
                         if (currentState === 1) {
                             that.fire("ready");
@@ -246,7 +254,7 @@ YUI.add("vlc", function (Y) {
                     }
                 }catch (err) {
                     that.fire("error");
-                    that._set("state",7);
+                    that._set("state", 7);
                     container.removeChild(node);
                     node = that._create(node, container, id, width, height);
                     if (autoPlay) {
@@ -254,7 +262,7 @@ YUI.add("vlc", function (Y) {
                     }
                 }
             };
-            setInterval(stateCheck,300);
+            Y.later(300, that, stateCheck, null, true);
         },
         getVersionInfo : function (){
             var that = this,

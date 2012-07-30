@@ -60,7 +60,8 @@
                     vlc.toggleMute();
                     break;
                 case 'fullscreen' :
-                    vlc.toggleFullScreen();
+                    vlc.set("fullscreen", true);
+                    Y.log("is fullscreen "+vlc.get("fullscreen") );
                     break
                 case 'get size' :
                     alert("width:"+vlc.get("size")[0]+" height:"+vlc.get("size")[1]);
