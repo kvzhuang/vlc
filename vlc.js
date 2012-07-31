@@ -266,8 +266,11 @@ YUI.add("vlc", function (Y) {
             _log("_poll() is executed.");
             var that = this,
                 input = that.get("object").input;
-
-            if (
+            if (input.length === 0 && input.time === 0) {
+                that.fire("buffering");
+                that._playTimer = Y.later(VLC.POLL_INTERVAL, that, that._poll);
+                that._set("state", "buffering");
+            } else if (
                 (input.length > 0 && input.time > 0) &&
                 (input.length === input.time)
             ) {
@@ -415,7 +418,28 @@ YUI.add("vlc", function (Y) {
             that.fire("resume");
             that._paused = false;
         },
-
+        mute: function () {
+            _log("mute() is executed.");
+            var that = this,
+                object = that.get("object");
+            if (that._paused) {
+                Y.log("mute() - The player has already been mute.", "warn", MODULE_ID);
+                return;
+            }
+            object.audio.toggleMute();
+            that._mute = true;
+        },
+        unmute: function () {
+            _log("unmute() is executed.");
+            var that = this,
+                object = that.get("object");
+            if (!that._mute) {
+                _log("unmute() - The player isn't mute.");
+                return;
+            }
+            object.audio.toggleMute();
+            that._mute = false;
+        },
         destructor: function () {
             _log("destructor() is executed.");
             var that = this,
@@ -428,11 +452,6 @@ YUI.add("vlc", function (Y) {
             object.parentNode.removeChild(object);
             object = null;
         }
-        //toggleMute: function () {
-            //var that = this,
-                //object = that.get("object");
-            //object.audio.toggleMute();
-        //},
     });
     Y.VLC = VLC;
 }, "0.0.1", {"requires": ["base", "node", "substitute"]});
