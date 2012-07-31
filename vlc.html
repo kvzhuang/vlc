@@ -20,7 +20,8 @@
         <input type="button" value="stop" id="stop" />
         <input type="button" value="volume up" id="vup" />
         <input type="button" value="volume down" id="vdown" />
-        <input type="button" value="mute" id="toggleMute" />
+        <input type="button" value="mute" />
+        <input type="button" value="unmute" />
         <input type="button" value="fullscreen" id="toggleFullscreen"/>
         <input type="button" value="get size" id="size"/>
         <input type="button" value="get time" id="time"/>
@@ -61,7 +62,10 @@
                     vlc.set("volume",vlc.get("volume")-1);
                     break
                 case 'mute' :
-                    vlc.toggleMute();
+                    vlc.mute();
+                    break;
+                case 'unmute' :
+                    vlc.unmute();
                     break;
                 case 'fullscreen' :
                     vlc.set("fullscreen", true);
@@ -94,12 +98,14 @@
             // vlc.play();
             Y.one("#controls").delegate('click', eventHandler, 'input');
         }
-
+        vlc.on("buffering", function(e){
+            Y.log("VLC buffering");
+        });
         vlc.on("ready", function(e){
             Y.log("VLC ready");
          });
         vlc.on("playing", function(e){
-            // Y.log("playing - duration = " + e.duration + "/ position = " + e.position);
+             Y.log("playing - duration = " + e.duration + "/ position = " + e.position);
          });
 
         vlc.after("stateChange", function(e){
