@@ -60,7 +60,7 @@ YUI.add("vlc", function (Y) {
         '    <param name="wmode" value="window">',
         '</object>'
     ].join("");
-    VLC.DEFAULT_WIDTH  = "1000px";
+    VLC.DEFAULT_WIDTH  = "1280px";
     VLC.DEFAULT_HEIGHT = "700px";
     VLC.CHECK_RETRY    = 3;
     VLC.CHECK_INTERVAL = 1000;
@@ -361,7 +361,12 @@ YUI.add("vlc", function (Y) {
                 object.setAttribute("type", VLC.TYPE);
             }
             object.setAttribute("version", VLC.VERSION);
-            object.playlist.playItem(object.playlist.add(that.get("url")));
+
+            try {
+                object.playlist.playItem(object.playlist.add(that.get("url")));
+            } catch (e) {
+                Y.log(e.message);
+            }
         },
         play: function (url) {
             _log("play() is executed.");
