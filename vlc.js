@@ -224,9 +224,10 @@ YUI.add("vlc", function (Y) {
     };
 
     Y.extend(VLC, Y.Base, {
-        _paused: false,
-        _retryCount: 0,
-        _playTimer: null,
+        _mute       : false,
+        _paused     : false,
+        _retryCount : 0,
+        _playTimer  : null,
         /**
          * VLC often fails to play.
          */
@@ -414,6 +415,7 @@ YUI.add("vlc", function (Y) {
             that.fire("resume");
             that._paused = false;
         },
+
         destructor: function () {
             _log("destructor() is executed.");
             var that = this,
