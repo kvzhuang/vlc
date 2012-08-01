@@ -55,7 +55,9 @@ YUI.add("vlc", function (Y) {
         '<object ',
         '    id="{id}" width="{width}" height="{height}" {type} >',
         '    <param name="autoplay" value="no">',
-        '    <param name="autostart value="no">',
+        '    <param name="autostart" value="no">',
+        '    <param name="bgcolor" value="#000000">',
+        '    <param name="toolbar" value="false">',
         '    <param name="src" value="">',
         '    <param name="wmode" value="window">',
         '</object>'
