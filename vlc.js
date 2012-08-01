@@ -340,31 +340,33 @@ YUI.add("vlc", function (Y) {
                 height = size[1],
                 id = Y.guid(),
                 node,
-                object;
+                object = that.get("object")|| null;
 
-            token = {
-                id     : id,
-                width  : width,
-                height : height
-            };
-            if (Y.UA.gecko) {
-                token.type = "type=" + VLC.TYPE;
+            if (!object) {
+                token = {
+                    id     : id,
+                    width  : width,
+                    height : height
+                };
+                if (Y.UA.gecko) {
+                    token.type = "type=" + VLC.TYPE;
+                }
+                html = Y.substitute(VLC.TEMPLATE, token);
+                container.append(html);
+
+                object = document.getElementById(id);
+                that._set("object", object);
+
+                if (Y.UA.ie) {
+                    object.setAttribute("classid", VLC.CLASS_ID);
+                    object.setAttribute("pluginspage", VLC.PLUGIN_PAGE);
+                } else {
+                    object.setAttribute("type", VLC.TYPE);
+                }
+                object.setAttribute("version", VLC.VERSION);
             }
-            html = Y.substitute(VLC.TEMPLATE, token);
-            container.append(html);
-
-            object = document.getElementById(id);
-            that._set("object", object);
-
-            if (Y.UA.ie) {
-                object.setAttribute("classid", VLC.CLASS_ID);
-                object.setAttribute("pluginspage", VLC.PLUGIN_PAGE);
-            } else {
-                object.setAttribute("type", VLC.TYPE);
-            }
-            object.setAttribute("version", VLC.VERSION);
-
             try {
+                object.playlist.clear();
                 object.playlist.playItem(object.playlist.add(that.get("url")));
             } catch (e) {
                 Y.log(e.message);
