@@ -28,6 +28,7 @@
         <input type="button" value="set time" id="time"/>
         <input type="button" value="get state" id="state"/>
         <input type="button" value="play" id="play"/>
+        <input type="button" value="next" id="play"/>
         <input type="button" value="destroy" id="destroy"/>
     </div>
 
@@ -88,6 +89,10 @@
                     break
                 case 'destroy' :
                     vlc.destroy();
+                    break
+                case 'next' :
+                    vlc.stop();
+                    vlc.play("http://o-o---preferred---fareastone-khh1---v9---lscache4.c.youtube.com/videoplayback?upn=4jeVf8ZgtBg&sparams=cp%2Cid%2Cip%2Cipbits%2Citag%2Cratebypass%2Csource%2Cupn%2Cexpire&fexp=920912%2C911628%2C915507%2C907217%2C922401%2C919804%2C920704%2C912806%2C906055%2C924500%2C924700%2C913547%2C904721%2C920706%2C907344%2C912706%2C900816%2C902518%2C909414&ms=au&itag=43&ipbits=8&signature=0DC4994A27CAF90754438F0B15B8D0B5DDEDA7E1.9285558C04A20508A77CDAFC385736EED32435FD&mv=m&sver=3&mt=1343980578&ratebypass=yes&source=youtube&expire=1344002080&key=yt1&ip=218.211.33.134&cp=U0hTSVBLUF9NSkNOM19IRVRBOmpscmZ4WnNleXpR&id=ae86fe0d2fa34be6");
                     break
             }
         };

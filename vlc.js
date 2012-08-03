@@ -242,7 +242,7 @@ YUI.add("vlc", function (Y) {
                 state = VLC.STATE[that.get("object").input.state];
                 if (that.get("state") !== state) {
                     that._set("state", state);
-                    if (state === "opening") {
+                    if (state === "opening" || state ==="playing") {
                         that._set("state", "play");
                         that.fire("play");
                         return;
@@ -280,6 +280,7 @@ YUI.add("vlc", function (Y) {
                 that._playTimer = null;
                 that.fire("ended");
                 that._set("state", "ended");
+                return;
             } else {
                 if (that.get("state") !== "playing") {
                     that.fire("playing", {
@@ -396,7 +397,9 @@ YUI.add("vlc", function (Y) {
            var that = this,
                object = that.get("object");
            object.playlist.stop();
-           that._playTimer.cancel();
+           if (that._playerTimer) {
+               that._playTimer.cancel();
+           }
            that._playTimer = null;
            that._set("state", "stopped");
            that.fire("stop");
