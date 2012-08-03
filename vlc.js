@@ -282,12 +282,10 @@ YUI.add("vlc", function (Y) {
                 that._set("state", "ended");
                 return;
             } else {
-                if (that.get("state") !== "playing") {
-                    that.fire("playing", {
-                        duration: input.length,
-                        position: input.time
-                    });
-                }
+                that.fire("playing", {
+                    duration: input.length,
+                    position: input.time
+                });
                 that._playTimer = Y.later(VLC.POLL_INTERVAL, that, that._poll);
                 that._set("state", "playing");
             }
