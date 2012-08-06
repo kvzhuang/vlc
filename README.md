@@ -9,24 +9,23 @@ How to use.
 -------
 
 1. First thing, you might include YUI 3 seed in your html file and this vlc.js.
-<pre><code> &lt;script type="text/javascript" src="http://yui.yahooapis.com/3.4.1/build/yui/yui-min.js"></script&gt;
-    &lt;script type="text/javascript" src="vlc.js"&gt;&lt;/script&gt;
+<pre><code> &lt;script type=&quot;text/javascript&quot; src=&quot;http://yui.yahooapis.com/3.4.1/build/yui/yui-min.js&quot;&gt;/script&gt;<br/>&lt;script type=&quot;text/javascript&quot; src=&quot;vlc.js&quot;&gt;&lt;/script&gt;<br/>
 </code></pre>
 2. Use this vlc plugin by the following code.
 <pre><code> YUI().use("vlc","node-event-delegate", function (Y) {});
 </code></pre>
 
 3. Create variable and its config.
-<pre><code> var    vlc, config;
-         config       = {
+<pre><code> var vlc, config;
+         config = {
              "container": "#vlc",
              "url": "http://dl.dropbox.com/u/10258402/GokKUqLcvD8.mp4"
          };
-         vlc          = new Y.VLC(config);
+         vlc = new Y.VLC(config);
 </code></pre>
 
 4. Config has many setting attributes, and it still in developing.
-<pre><code> container : You can settup where your vlc plugin to show.
+<pre><code>container : You can settup where your vlc plugin to show.
     url       : The streaming url you will play.
     autoPlay  : Will vlc player autoplay this streaming?
     size      : Array to control vlc player's width and height,
@@ -35,8 +34,7 @@ How to use.
 
 5. You also can access some attributes by using YUI ATTRS access method.
    Just access like sample code:  vlc.get("installed");
-<pre><code>
-    installed  : Is your browser install vlc web plugin?
+<pre><code>installed  : Is your browser install vlc web plugin?
     state      : The state of current vlc player state
                 ("idle", "opening", "buffering", "playing", "paused",
                  "stopped", "ended", "error")
