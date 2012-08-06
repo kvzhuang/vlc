@@ -261,6 +261,11 @@ YUI.add("vlc", function (Y) {
                 Y.later(VLC.CHECK_INTERVAL, that, that._checkState);
                 that._retryCount = that._retryCount - 1;
             } else {
+                that.fire("error", {
+                    code: "2",
+                    message: "VLC fails to loading. Try again later..."
+                });
+                that._set("state", "error");
                 _log("Retry too many times. Give up!", "error");
             }
         },
