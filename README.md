@@ -4,24 +4,31 @@ VLC with YUI plugin
 We design this utility to help some VLC web plugin's leak.
 The player's state change detection. The old version crash issue (still improve).
 The browser's compatibility (IE, FireFox and Chrome should work).
+
+How to use.
 -------
 
 1. First thing, you might include YUI 3 seed in your html file and this vlc.js.
-
+'''html
 <script type="text/javascript" src="http://yui.yahooapis.com/3.4.1/build/yui/yui-min.js"
 <script type="text/javascript" src="vlc.js"></script>
-
+'''
 2. Use this vlc plugin by the following code.
 
-YUI().use("vlc","node-event-delegate", function (Y) {
+'''javascript
+YUI().use("vlc","node-event-delegate", function (Y) {});
+'''
 
 3. Create variable and its config.
+
+'''javascript
          var    vlc, config;
          config       = {
              "container": "#vlc",
              "url": "http://dl.dropbox.com/u/10258402/GokKUqLcvD8.mp4"
          };
          vlc          = new Y.VLC(config);
+'''
 
 4. Config has many setting attributes, and it still in developing.
 
@@ -45,8 +52,10 @@ YUI().use("vlc","node-event-delegate", function (Y) {
     fullscrren : Set player fullscreen.
 
 6. State detection - thank god the YUI ATTR has change enevt,
-   so even there is no
+   so even origin vla web plugin state change event is not working.
+   We can still detect its state.
 
+'''javascript
         vlc.on("buffering", function(e){ //when play is buffering
             Y.log("VLC buffering");
         });
@@ -67,6 +76,7 @@ YUI().use("vlc","node-event-delegate", function (Y) {
         vlc.after("stateChange", function(e){
             Y.log("State change from "+e.prevVal +" to "+e.newVal );
         });
+'''
 
 7. Some issue:
     The auto play attribute still has some problem, we are try to figure it out.
