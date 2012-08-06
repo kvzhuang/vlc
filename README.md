@@ -27,7 +27,7 @@ How to use.
          vlc = new Y.VLC(config);
 </code></pre>
 
-4. Config has many setting attributes, and it still in developing.
+4. Config has many setting attributes (still in developing).
 <pre><code>container : You can settup where your vlc plugin to show.
     url       : The streaming url you will play.
     autoPlay  : Will vlc player autoplay this streaming?
@@ -48,13 +48,13 @@ How to use.
     fullscrren : Set player fullscreen.
 </pre></code>
 
-6. State detection - thank god the YUI ATTR has change enevt,
-   so even origin vla web plugin state change event is not working.
+6. State detection - thank god the YUI ATTR has change event,
+   even origin vlc web plugin state change event is not working.
    We can still detect its state.
-<pre><code> vlc.on("buffering", function(e){ //when play is buffering
+<pre><code> vlc.on("buffering", function(e){ //when player is buffering
         Y.log("VLC buffering");
     });
-    vlc.on("ready", function(e){    //when vlc is ready
+    vlc.on("ready", function(e){    //when player is ready
         Y.log("VLC ready");
     });
     //When vlc is playing, e.duration and e.postion can be access
@@ -68,5 +68,5 @@ How to use.
     });
 </code></pre>
 7. Some issue
-    The auto play attribute still has some problem, we are try to figure it out.
+    The autoPlay attribute still has some problems, we are trying to figure it out.
 
