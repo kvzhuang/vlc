@@ -9,8 +9,9 @@ How to use.
 -------
 
 1. First thing, you might include YUI 3 seed in your html file and this vlc.js.
-<pre><code> &lt;script type=&quot;text/javascript&quot; src=&quot;http://yui.yahooapis.com/3.4.1/build/yui/yui-min.js&quot;&gt;/script&gt;<br/>&lt;script type=&quot;text/javascript&quot; src=&quot;vlc.js&quot;&gt;&lt;/script&gt;<br/>
-</code></pre>
+<br/>
+ &lt;script type=&quot;text/javascript&quot; src=&quot;http://yui.yahooapis.com/3.4.1/build/yui/yui-min.js&quot;&gt;/script&gt;<br/>&lt;script type=&quot;text/javascript&quot; src=&quot;vlc.js&quot;&gt;&lt;/script&gt;<br/>
+<br/>
 2. Use this vlc plugin by the following code.
 <pre><code> YUI().use("vlc","node-event-delegate", function (Y) {});
 </code></pre>
