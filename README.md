@@ -9,26 +9,26 @@ How to use.
 -------
 
 1. First thing, you might include YUI 3 seed in your html file and this vlc.js.
-'''
-<script type="text/javascript" src="http://yui.yahooapis.com/3.4.1/build/yui/yui-min.js"
-<script type="text/javascript" src="vlc.js"></script>
-'''
+<pre><code>
+    &lt;script type="text/javascript" src="http://yui.yahooapis.com/3.4.1/build/yui/yui-min.js"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript" src="vlc.js"&gt;&lt;//script&gt;
+</code></pre>
 2. Use this vlc plugin by the following code.
 
-'''
+<pre><code>
 YUI().use("vlc","node-event-delegate", function (Y) {});
-'''
+</code></pre>
 
 3. Create variable and its config.
 
-'''
+<pre><code>
          var    vlc, config;
          config       = {
              "container": "#vlc",
              "url": "http://dl.dropbox.com/u/10258402/GokKUqLcvD8.mp4"
          };
          vlc          = new Y.VLC(config);
-'''
+</code></pre>
 
 4. Config has many setting attributes, and it still in developing.
 
@@ -55,7 +55,7 @@ YUI().use("vlc","node-event-delegate", function (Y) {});
    so even origin vla web plugin state change event is not working.
    We can still detect its state.
 
-'''
+<pre><code>
     vlc.on("buffering", function(e){ //when play is buffering
         Y.log("VLC buffering");
     });
@@ -75,7 +75,8 @@ YUI().use("vlc","node-event-delegate", function (Y) {});
     vlc.after("stateChange", function(e){
         Y.log("State change from "+e.prevVal +" to "+e.newVal );
     });
-'''
+</code></pre>
+
 
 7. Some issue:
     The auto play attribute still has some problem, we are try to figure it out.
