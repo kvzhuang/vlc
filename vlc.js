@@ -67,6 +67,7 @@ YUI.add("vlc", function (Y) {
     VLC.CHECK_RETRY    = 3;
     VLC.CHECK_INTERVAL = 1000;
     VLC.POLL_INTERVAL  = 1000;
+    VLC.INSTALLED      = undefined;
     VLC.ATTRS = {
         /**
          * The container to place object element.
@@ -125,34 +126,42 @@ YUI.add("vlc", function (Y) {
         "installed": {
             value: null,
             getter: function () {
-                var vlcObj,
-                    i, j,   // For iteration.
-                    plugins,
-                    plugin;
+                if (Y.Lang.isUndefined(VLC.INSTALLED)) {
+                    var vlcObj,
+                        i, j,   // For iteration.
+                        plugins,
+                        plugin;
 
-                if (window.ActiveXObject) {
-                    try {
-                        vlcObj = new window.ActiveXObject("VideoLAN.VLCPlugin.2");
-                    } catch (e) {
-                        return false;
+                    if (window.ActiveXObject) {
+                        try {
+                            vlcObj = new window.ActiveXObject("VideoLAN.VLCPlugin.2");
+                        } catch (e) {
+                            VLC.INSTALLED = false;
+                            return false;
+                        }
+                        if (!vlcObj) {
+                            VLC.INSTALLED = false;
+                            return false;
+                        }
+                        VLC.INSTALLED = true;
+                        return true;
                     }
-                    if (!vlcObj) {
-                        return false;
-                    }
-                    return true;
-                }
 
-                plugins = window.navigator.plugins;
-                if (plugins && plugins.length) {
-                    for (i = 0, j = plugins.length; i < j; i++) {
-                        plugin = plugins[i];
-                        if (plugin.name.indexOf("VLC") > -1) {
-                            return true;
+                    plugins = window.navigator.plugins;
+                    if (plugins && plugins.length) {
+                        for (i = 0, j = plugins.length; i < j; i++) {
+                            plugin = plugins[i];
+                            if (plugin.name.indexOf("VLC") > -1) {
+                                VLC.INSTALLED = true;
+                                return true;
+                            }
                         }
                     }
+                    VLC.INSTALLED = false;
+                    return false;
+                } else {
+                    return VLC.INSTALLED;
                 }
-
-                return false;
             }
         },
         /**
@@ -355,17 +364,13 @@ YUI.add("vlc", function (Y) {
                 token = {
                     id     : id,
                     width  : width,
-                    height : height
+                    height : height,
+                    type   : (Y.UA.gecko) ? "type="+VLC.TYPE : ""
                 };
-                if (Y.UA.gecko) {
-                    token.type = "type=" + VLC.TYPE;
-                }
                 html = Y.substitute(VLC.TEMPLATE, token);
                 container.append(html);
-
                 object = document.getElementById(id);
                 that._set("object", object);
-
                 if (Y.UA.ie) {
                     object.setAttribute("classid", VLC.CLASS_ID);
                     object.setAttribute("pluginspage", VLC.PLUGIN_PAGE);
@@ -403,7 +408,7 @@ YUI.add("vlc", function (Y) {
            var that = this,
                object = that.get("object");
            object.playlist.stop();
-           if (that._playerTimer) {
+           if (that._playTimer) {
                that._playTimer.cancel();
            }
            that._playTimer = null;
