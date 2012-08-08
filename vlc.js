@@ -284,8 +284,10 @@ YUI.add("vlc", function (Y) {
             _log("ended is executed.");
                 that.fire("ended");
                 that._set("state", "ended");
-                that._playTimer.cancel();
-                that._playTimer = null;
+                if (that._playTimer) {
+                    that._playTimer.cancel();
+                    that._playTimer = null;
+                }
                 return;
             } else {
                 that.fire("playing", {
