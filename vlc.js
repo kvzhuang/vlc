@@ -416,7 +416,7 @@ YUI.add("vlc", function (Y) {
            that.fire("stop");
         },
         pause: function () {
-            _log("stop() is executed.");
+            _log("pause() is executed.");
             var that = this,
                 object = that.get("object");
             if (that._paused) {
@@ -439,8 +439,9 @@ YUI.add("vlc", function (Y) {
                 return;
             }
             object.playlist.togglePause();
-            that._playTimer = Y.later(VLC.POLL_INTERVAL, that, that._poll, null, true);
+            that._playTimer = Y.later(VLC.POLL_INTERVAL, that, that._poll);
             that.fire("resume");
+            that._set("state", "playing");
             that._paused = false;
         },
         mute: function () {
